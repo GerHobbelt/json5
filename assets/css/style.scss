@@ -3,6 +3,10 @@
 
 @import "{{ site.theme }}";
 
+body {
+    color: #333;
+}
+
 .highlight .err {
     color: inherit;
     background-color: inherit;
