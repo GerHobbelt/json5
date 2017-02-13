@@ -4,8 +4,8 @@
 
 JSON is an excellent data format, but we think it can be better.
 
-**JSON5 is a proposed extension to JSON** that aims to make it easier for
-*humans to write and maintain* by hand. It does this by adding some minimal
+**JSON5 is an extension to JSON** that aims to make it easier for
+*humans to write and maintain* by hand by adding minimal
 syntax features directly from ECMAScript 5.
 
 JSON5 remains a **strict subset of JavaScript**, adds **no new data types**,
