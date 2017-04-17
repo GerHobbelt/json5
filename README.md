@@ -56,6 +56,8 @@ JSON5. **All of these are optional**, and **all of these come from ES5**.
 
   *(TODO: Unicode characters and escape sequences aren’t yet supported in this
   implementation.)*
+  
+- Object keys can also be single-quoted.
 
 - Objects can have trailing commas.
 
@@ -258,8 +260,7 @@ tests, and ensure that `npm test` continues to pass.
 
 ## License
 
-MIT License © 2012-2016 Aseem Kishore, and [others](
-https://github.com/aseemk/json5/contributors).
+MIT. See [LICENSE.md](./LICENSE.md) for details.
 
 
 ## Credits
@@ -286,8 +287,8 @@ supporter, contributing multiple patches and ideas. Thanks Max!
 
 [npm-badge]: https://img.shields.io/npm/v/json5.svg
 [npm-url]: https://npmjs.com/package/json5
-[travis-badge]: https://api.travis-ci.org/aseemk/json5.svg
-[travis-url]: https://travis-ci.org/aseemk/json5
+[travis-badge]: https://api.travis-ci.org/GerHobbelt/json5.svg
+[travis-url]: https://travis-ci.org/GerHobbelt/json5
 [coveralls-badge]:https://coveralls.io/repos/aseemk/json5/badge.svg?branch=master&service=github
 [coveralls-url]: https://coveralls.io/github/aseemk/json5?branch=master
 [david-badge]: https://david-dm.org/aseemk/json5.svg

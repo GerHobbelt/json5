@@ -16,7 +16,7 @@
     ],
     main: 'lib/json5.js',
     bin: 'lib/cli.js',
-    files: ["lib/"],
+    files: ['lib/'],
     dependencies: {
         yargs: '7.1.0',
     },
