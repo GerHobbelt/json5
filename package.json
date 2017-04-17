@@ -1,41 +1,41 @@
 {
-    "name": "json5",
-    "version": "0.5.1-11",
-    "description": "JSON for the ES5 era.",
-    "keywords": [
-        "json",
-        "es5"
-    ],
-    "author": "Aseem Kishore <aseem.kishore@gmail.com>",
-    "contributors": [
-        "Max Nanasy <max.nanasy@gmail.com>",
-        "Andrew Eisenberg <andrew@eisenberg.as>",
-        "Jordan Tucker <jordanbtucker@gmail.com>"
-    ],
-    "main": "lib/json5.js",
-    "bin": "lib/cli.js",
-    "files": [
-        "lib/"
-    ],
-    "dependencies": {
-        "yargs": "7.1.0"
-    },
-    "devDependencies": {
-        "coveralls": "2.13.0",
-        "eslint": "3.19.0",
-        "istanbul": "0.4.5",
-        "mocha": "3.2.0"
-    },
-    "scripts": {
-        "build": "node ./lib/cli.js -c package.json5",
-        "lint": "./node_modules/.bin/eslint lib/*.js test/*.js",
-        "test": "mocha --ui exports --reporter spec",
-        "coverage": "istanbul cover -- _mocha --ui exports --report lcovonly; cat ./coverage/lcov.info | coveralls"
-    },
-    "homepage": "http://json5.org/",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/json5/json5"
-    }
+  "name": "json5",
+  "version": "0.5.1-13",
+  "description": "JSON for the ES5 era.",
+  "keywords": [
+    "json",
+    "es5"
+  ],
+  "author": "Aseem Kishore <aseem.kishore@gmail.com>",
+  "contributors": [
+    "Max Nanasy <max.nanasy@gmail.com>",
+    "Andrew Eisenberg <andrew@eisenberg.as>",
+    "Jordan Tucker <jordanbtucker@gmail.com>"
+  ],
+  "main": "lib/json5.js",
+  "bin": "lib/cli.js",
+  "files": [
+    "lib/"
+  ],
+  "dependencies": {
+    "yargs": "7.1.0"
+  },
+  "devDependencies": {
+    "coveralls": "2.13.0",
+    "eslint": "3.19.0",
+    "istanbul": "0.4.5",
+    "mocha": "3.2.0"
+  },
+  "scripts": {
+    "build": "node ./lib/cli.js -c package.json5",
+    "lint": "./node_modules/.bin/eslint lib/*.js test/*.js",
+    "test": "mocha --ui exports --reporter spec",
+    "coverage": "istanbul cover -- _mocha --ui exports --report lcovonly; cat ./coverage/lcov.info | coveralls"
+  },
+  "homepage": "http://json5.org/",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/json5/json5"
+  }
 }
