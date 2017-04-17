@@ -1,4 +1,4 @@
-# JSON5 – Modern JSON
+# JSON5 – JSON for Humans
 
 [![npm version][npm-badge]][npm-url]
 [![Build Status][travis-badge]][travis-url]
@@ -135,7 +135,7 @@ This implementation’s own [package.json5](package.json5) is more realistic:
     author: 'Aseem Kishore <aseem.kishore@gmail.com>',
     contributors: [
         // TODO: Should we remove this section in favor of GitHub's list?
-        // https://github.com/aseemk/json5/contributors
+        // https://github.com/json5/json5/contributors
         'Max Nanasy <max.nanasy@gmail.com>',
         'Andrew Eisenberg <andrew@eisenberg.as>',
         'Jordan Tucker <jordanbtucker@gmail.com>',
@@ -160,7 +160,7 @@ This implementation’s own [package.json5](package.json5) is more realistic:
     license: 'MIT',
     repository: {
         type: 'git',
-        url: 'https://github.com/aseemk/json5.git',
+        url: 'https://github.com/json5/json5',
     },
 }
 ```
@@ -172,10 +172,10 @@ Join the [Google Group](http://groups.google.com/group/json5) if you’re
 interested in JSON5 news, updates, and general discussion.
 Don’t worry, it’s very low-traffic.
 
-The [GitHub wiki](https://github.com/aseemk/json5/wiki) is a good place to track
+The [GitHub wiki](https://github.com/json5/json5/wiki) is a good place to track
 JSON5 support and usage. Contribute freely there!
 
-[GitHub Issues](https://github.com/aseemk/json5/issues) is the place to
+[GitHub Issues](https://github.com/json5/json5/issues) is the place to
 formally propose feature requests and report bugs. Questions and general
 feedback are better directed at the Google Group.
 
@@ -243,7 +243,7 @@ json5 -c path/to/foo.json5    # generates path/to/foo.json
 ## Development
 
 ```sh
-git clone git://github.com/aseemk/json5.git
+git clone https://github.com/json5/json5
 cd json5
 npm install
 npm test
@@ -252,8 +252,8 @@ npm test
 As the `package.json5` file states, be sure to run `npm run build` on changes
 to `package.json5`, since npm requires `package.json`.
 
-Feel free to [file issues](https://github.com/aseemk/json5/issues) and submit
-[pull requests](https://github.com/aseemk/json5/pulls) — contributions are
+Feel free to [file issues](https://github.com/json5/json5/issues) and submit
+[pull requests](https://github.com/json5/json5/pulls) — contributions are
 welcome. If you do submit a pull request, please be sure to add or update the
 tests, and ensure that `npm test` continues to pass.
 
