@@ -30,7 +30,8 @@
     "build": "node ./lib/cli.js -c package.json5",
     "lint": "./node_modules/.bin/eslint lib/*.js test/*.js",
     "test": "mocha --ui exports --reporter spec",
-    "coverage": "istanbul cover -- _mocha --ui exports --report lcovonly; cat ./coverage/lcov.info | coveralls"
+    "coverage": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha -- --ui exports --reporter spec",
+    "coverage2": "./node_modules/.bin/istanbul cover ./node_modules/mocha/bin/_mocha -- --ui exports --reporter spec; cat ./coverage/lcov.info | coveralls"
   },
   "homepage": "http://json5.org/",
   "license": "MIT",
