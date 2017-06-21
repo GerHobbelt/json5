@@ -3,7 +3,7 @@
 
 {
     name: 'json5',
-    version: '0.5.1-11',
+    version: '0.5.1-16',
     description: 'JSON for the ES5 era.',
     keywords: ['json', 'es5'],
     author: 'Aseem Kishore <aseem.kishore@gmail.com>',
@@ -21,7 +21,6 @@
         yargs: '8.0.2',
     },
     devDependencies: {
-        coveralls: '2.13.1',
         eslint: '4.0.0',
         istanbul: '0.4.5',
         mocha: '3.4.2',
@@ -30,7 +29,7 @@
         build: 'node ./lib/cli.js -c package.json5',
         lint: './node_modules/.bin/eslint lib/*.js test/*.js',
         test: 'mocha --ui exports --reporter spec',
-        coverage: 'istanbul cover -- _mocha --ui exports --report lcovonly; cat ./coverage/lcov.info | coveralls'
+        coverage: 'node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --ui exports --reporter spec',
             // TODO: Would it be better to define these in a mocha.opts file?
     },
     homepage: 'http://json5.org/',
