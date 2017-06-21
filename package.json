@@ -29,7 +29,7 @@
         "build": "node ./lib/cli.js -c package.json5",
         "lint": "./node_modules/.bin/eslint lib/*.js test/*.js",
         "test": "mocha --ui exports --reporter spec",
-    "coverage": "node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --ui exports --reporter spec"
+        "coverage": "node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --ui exports --reporter spec"
     },
     "homepage": "http://json5.org/",
     "license": "MIT",
