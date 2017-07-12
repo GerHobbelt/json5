@@ -88,7 +88,14 @@ function createTest(fileName, dir) {
     }
 
     function parseES5(str) {
-        return eval('"use strict"; (\n' + str + '\n)');
+        var rv = eval('"use strict"; (\n' + str + '\n)');
+        // Check if the eval'd value is a ES2017 template string per chance:
+        // in that case, we must cast it to a regular string before handing 
+        // if off to the caller.
+        if (rv && rv.raw) {
+            rv = '' + rv;
+        }
+        return rv;
     }
 
     exports[dir][fileName] = function test() {
