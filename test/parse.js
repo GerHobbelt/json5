@@ -118,6 +118,10 @@ function createTest(fileName, dir) {
                         'Expected parsed JSON5 to equal parsed ES5.');
                 }
                 break;
+            case '.heredoc5':
+                assert.deepEqual(parseJSON5(str), parseJSON(refStr),
+                    'Expected parsed JSON5 HEREDOC to equal parsed reference JSON.');
+                break;
             case '.js':
                 assert.throws(function () {
                     return parseJSON(str);        // test validation
