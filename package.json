@@ -1,6 +1,6 @@
 {
-    "name": "json5",
-    "version": "0.5.1-18",
+    "name": "@gerhobbelt/json5",
+    "version": "0.5.1-19",
     "description": "JSON for the ES5 era.",
     "keywords": [
         "json",
@@ -29,7 +29,8 @@
         "build": "node ./lib/cli.js -c package.json5",
         "lint": "./node_modules/.bin/eslint lib/*.js test/*.js",
         "test": "mocha --ui exports --reporter spec",
-        "coverage": "node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --ui exports --reporter spec"
+        "coverage": "node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --ui exports --reporter spec",
+        "pub": "npm publish --access public"
     },
     "homepage": "http://json5.org/",
     "license": "MIT",

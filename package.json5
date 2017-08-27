@@ -2,8 +2,8 @@
 // JSON file, so compile via `npm run build`. Be sure to keep both in sync!
 
 {
-    name: 'json5',
-    version: '0.5.1-18',
+    name: '@gerhobbelt/json5',
+    version: '0.5.1-19',
     description: 'JSON for the ES5 era.',
     keywords: ['json', 'es5'],
     author: 'Aseem Kishore <aseem.kishore@gmail.com>',
@@ -31,6 +31,7 @@
         test: 'mocha --ui exports --reporter spec',
         coverage: 'node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --ui exports --reporter spec',
             // TODO: Would it be better to define these in a mocha.opts file?
+        pub: 'npm publish --access public',
     },
     homepage: 'http://json5.org/',
     license: 'MIT',
