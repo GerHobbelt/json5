@@ -1,6 +1,6 @@
 {
     "name": "@gerhobbelt/json5",
-    "version": "0.5.1-19",
+    "version": "0.5.1-20",
     "description": "JSON for the ES5 era.",
     "keywords": [
         "json",
