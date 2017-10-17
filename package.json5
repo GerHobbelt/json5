@@ -21,9 +21,9 @@
         yargs: '8.0.2',
     },
     devDependencies: {
-        eslint: '4.3.0',
+        eslint: '4.9.0',
         istanbul: '0.4.5',
-        mocha: '3.4.2',
+        mocha: '4.0.1',
     },
     scripts: {
         build: 'node ./lib/cli.js -c package.json5',
