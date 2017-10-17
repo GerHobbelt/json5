@@ -129,6 +129,7 @@ const lexStates = {
             return
 
         case undefined:
+            read()
             return newToken('eof')
         }
 
@@ -164,8 +165,9 @@ const lexStates = {
     multiLineComment () {
         switch (c) {
         case '*':
+            read()
             lexState = 'multiLineCommentAsterisk'
-            break
+            return
 
         case undefined:
             throw invalidChar(read())
@@ -175,12 +177,22 @@ const lexStates = {
     },
 
     multiLineCommentAsterisk () {
-        if (c === undefined) {
+        switch (c) {
+        case '*':
+            read()
+            return
+
+        case '/':
+            read()
+            lexState = 'default'
+            return
+
+        case undefined:
             throw invalidChar(read())
         }
 
         read()
-        lexState = (c === '/') ? 'default' : 'multiLineComment'
+        lexState = 'multiLineComment'
     },
 
     singleLineComment () {
@@ -189,10 +201,12 @@ const lexStates = {
         case '\r':
         case '\u2028':
         case '\u2029':
+            read()
             lexState = 'default'
-            break
+            return
 
         case undefined:
+            read()
             return newToken('eof')
         }
 
@@ -783,6 +797,10 @@ function unicodeEscape () {
 
 const parseStates = {
     start () {
+        if (token.type === 'eof') {
+            throw invalidEOF()
+        }
+
         push()
     },
 
@@ -966,6 +984,10 @@ function invalidChar (c) {
     return syntaxError(`JSON5: invalid character '${formatChar(c)}' at ${line}:${column}`)
 }
 
+function invalidEOF () {
+    return syntaxError(`JSON5: invalid end of input at ${line}:${column}`)
+}
+
 // This code is unreachable.
 // function invalidToken () {
 //     if (token.type === 'eof') {
@@ -989,6 +1011,7 @@ function formatChar (c) {
     const replacements = {
         "'": "\\'",
         '"': '\\"',
+        '\\': '\\\\',
         '\b': '\\b',
         '\f': '\\f',
         '\n': '\\n',

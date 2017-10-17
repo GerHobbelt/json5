@@ -4,7 +4,35 @@ import JSON5 from '../lib'
 describe('JSON5', () => {
     describe('#parse()', () => {
         describe('errors', () => {
-            it('throws on invalid characters in comments', () => {
+            it('throws on empty documents', () => {
+                assert.throws(() => {
+                    JSON5.parse('')
+                },
+                err => {
+                    return (
+                        err instanceof SyntaxError &&
+                        /^JSON5: invalid end of input/.test(err.message) &&
+                        err.lineNumber === 1 &&
+                        err.columnNumber === 1
+                    )
+                })
+            })
+
+            it('throws on documents with only comments', () => {
+                assert.throws(() => {
+                    JSON5.parse('//a')
+                },
+                err => {
+                    return (
+                        err instanceof SyntaxError &&
+                        /^JSON5: invalid end of input/.test(err.message) &&
+                        err.lineNumber === 1 &&
+                        err.columnNumber === 4
+                    )
+                })
+            })
+
+            it('throws on incomplete single line comments', () => {
                 assert.throws(() => {
                     JSON5.parse('/a')
                 },

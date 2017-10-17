@@ -3,7 +3,7 @@
 
 {
     name: '@gerhobbelt/json5',
-    version: '0.5.1-20',
+  "version": "1.0.0-21",
     description: 'JSON for humans.',
     main: 'lib/index.js',
     bin: 'lib/cli.js',
