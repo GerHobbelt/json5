@@ -1,8 +1,10 @@
+#!/usr/bin/env node
+
 import fs from 'fs'
 import path from 'path'
 import minimist from 'minimist'
 
-import packageJSON from '../package.json'
+import pkg from '../package.json'
 import JSON5 from './'
 
 const argv = minimist(process.argv.slice(2), {
@@ -65,10 +67,11 @@ if (argv.version) {
                 // specified with <file> and not --out-file, then a file with
                 // the same name but with a .json extension will be written.
                 if (argv.convert && inFilename && !argv.o) {
+                    const parsedFilename = path.parse(inFilename)
                     const outFilename = path.format(
                         Object.assign(
-                            path.parse(inFilename),
-                            {ext: 'json'}
+                            parsedFilename,
+                            {base: path.basename(parsedFilename.base, parsedFilename.ext) + '.json'}
                         )
                     )
 
@@ -83,12 +86,13 @@ if (argv.version) {
             }
         } catch (err) {
             console.error(err.message)
+            process.exit(1)
         }
     })
 }
 
 function version () {
-    console.log(packageJSON.version)
+    console.log(pkg.version)
 }
 
 function usage () {
