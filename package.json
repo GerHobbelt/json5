@@ -1,41 +1,71 @@
 {
-    "name": "@gerhobbelt/json5",
-    "version": "0.5.1-19",
-    "description": "JSON for the ES5 era.",
-    "keywords": [
-        "json",
-        "es5"
-    ],
-    "author": "Aseem Kishore <aseem.kishore@gmail.com>",
-    "contributors": [
-        "Max Nanasy <max.nanasy@gmail.com>",
-        "Andrew Eisenberg <andrew@eisenberg.as>",
-        "Jordan Tucker <jordanbtucker@gmail.com>"
-    ],
-    "main": "lib/json5.js",
-    "bin": "lib/cli.js",
-    "files": [
-        "lib/"
-    ],
-    "dependencies": {
-        "yargs": "8.0.2"
-    },
-    "devDependencies": {
-        "eslint": "4.9.0",
-        "istanbul": "0.4.5",
-        "mocha": "4.0.1"
-    },
-    "scripts": {
-        "build": "node ./lib/cli.js -c package.json5",
-        "lint": "./node_modules/.bin/eslint lib/*.js test/*.js",
-        "test": "mocha --ui exports --reporter spec",
-        "coverage": "node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --ui exports --reporter spec",
+  "name": "@gerhobbelt/json5",
+  "version": "0.5.1-20",
+  "description": "JSON for the ES5 era.",
+  "main": "lib/",
+  "bin": "lib/cli.js",
+  "files": [
+    "lib/",
+    "dist/"
+  ],
+  "scripts": {
+    "prepublishOnly": "npm run lint && npm test",
+    "preversion": "npm run lint && npm test",
+    "build": "node build.js",
+    "lint": "eslint --fix build.js src/",
+    "test": "cross-env NODE_ENV=test npm run build && nyc --reporter=html --reporter=text mocha",
+        "old_build": "node ./lib/cli.js -c package.json5",
+        "old_lint": "./node_modules/.bin/eslint lib/*.js test/*.js",
+        "old_test": "mocha --ui exports --reporter spec",
+        "old_coverage": "node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --ui exports --reporter spec",
         "pub": "npm publish --access public"
-    },
-    "homepage": "http://json5.org/",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/json5/json5"
-    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/json5/json5.git"
+  },
+  "keywords": [
+    "json",
+    "json5",
+    "es5",
+    "es2015",
+    "ecmascript"
+  ],
+  "author": "Aseem Kishore <aseem.kishore@gmail.com>",
+  "contributors": [
+    "Max Nanasy <max.nanasy@gmail.com>",
+    "Andrew Eisenberg <andrew@eisenberg.as>",
+    "Jordan Tucker <jordanbtucker@gmail.com>"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/json5/json5/issues"
+  },
+  "homepage": "http://json5.org/",
+  "devDependencies": {
+    "babel-core": "6.21.0",
+    "babel-plugin-istanbul": "3.0.0",
+    "babel-preset-env": "1.6.0",
+    "babel-register": "6.18.0",
+    "babelify": "7.3.0",
+    "browserify": "13.1.1",
+    "cross-env": "3.1.3",
+    "del": "2.2.2",
+    "eslint": "4.4.1",
+    "eslint-config-standard": "10.2.1",
+    "eslint-plugin-import": "2.7.0",
+    "eslint-plugin-node": "5.1.1",
+    "eslint-plugin-promise": "3.5.0",
+    "eslint-plugin-standard": "3.0.1",
+    "globby": "6.1.0",
+    "mocha": "3.2.0",
+    "nyc": "10.0.0",
+    "regenerate": "1.3.2",
+    "sinon": "1.17.6",
+    "unicode-9.0.0": "0.7.0"
+  },
+  "dependencies": {
+    "minimist": "1.2.0",
+        "yargs": "8.0.2"
+  }
 }
