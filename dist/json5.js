@@ -70,9 +70,10 @@ function parse(text, reviver) {
     do {
         token = lex();
 
-        if (!parseStates[parseState]) {
-            throw invalidParseState();
-        }
+        // This code is unreachable.
+        // if (!parseStates[parseState]) {
+        //     throw invalidParseState()
+        // }
 
         parseStates[parseState]();
     } while (token.type !== 'eof');
@@ -114,9 +115,11 @@ function lex() {
 
     for (;;) {
         c = peek();
-        if (!lexStates[lexState]) {
-            throw invalidLexState(lexState);
-        }
+
+        // This code is unreachable.
+        // if (!lexStates[lexState]) {
+        //     throw invalidLexState(lexState)
+        // }
 
         var _token = lexStates[lexState]();
         if (_token) {
@@ -139,6 +142,8 @@ function read() {
         column = 0;
     } else if (c) {
         column += c.length;
+    } else {
+        column++;
     }
 
     if (c) {
@@ -178,9 +183,10 @@ var lexStates = {
             return;
         }
 
-        if (!lexStates[parseState]) {
-            throw invalidLexState(parseState);
-        }
+        // This code is unreachable.
+        // if (!lexStates[parseState]) {
+        //     throw invalidLexState(parseState)
+        // }
 
         return lexStates[parseState]();
     },
@@ -197,8 +203,7 @@ var lexStates = {
                 return;
         }
 
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     },
     multiLineComment: function multiLineComment() {
         switch (c) {
@@ -207,14 +212,14 @@ var lexStates = {
                 break;
 
             case undefined:
-                throw invalidChar(c);
+                throw invalidChar(read());
         }
 
         read();
     },
     multiLineCommentAsterisk: function multiLineCommentAsterisk() {
         if (c === undefined) {
-            throw invalidChar(c);
+            throw invalidChar(read());
         }
 
         read();
@@ -306,13 +311,11 @@ var lexStates = {
                 return;
         }
 
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     },
     identifierNameStartEscape: function identifierNameStartEscape() {
         if (c !== 'u') {
-            read();
-            throw invalidChar(c);
+            throw invalidChar(read());
         }
 
         read();
@@ -357,8 +360,7 @@ var lexStates = {
     },
     identifierNameEscape: function identifierNameEscape() {
         if (c !== 'u') {
-            read();
-            throw invalidChar(c);
+            throw invalidChar(read());
         }
 
         read();
@@ -412,8 +414,7 @@ var lexStates = {
                 return newToken('numeric', _sign * Infinity);
         }
 
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     },
     zero: function zero() {
         switch (c) {
@@ -465,8 +466,7 @@ var lexStates = {
             return;
         }
 
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     },
     decimalPoint: function decimalPoint() {
         switch (c) {
@@ -516,8 +516,7 @@ var lexStates = {
             return;
         }
 
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     },
     decimalExponentSign: function decimalExponentSign() {
         if (_util2.default.isDigit(c)) {
@@ -526,8 +525,7 @@ var lexStates = {
             return;
         }
 
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     },
     decimalExponentInteger: function decimalExponentInteger() {
         if (_util2.default.isDigit(c)) {
@@ -544,8 +542,7 @@ var lexStates = {
             return;
         }
 
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     },
     hexadecimalInteger: function hexadecimalInteger() {
         if (_util2.default.isHexDigit(c)) {
@@ -582,8 +579,7 @@ var lexStates = {
 
             case '\n':
             case '\r':
-                read();
-                throw invalidChar(c);
+                throw invalidChar(read());
 
             case '\u2028':
             case '\u2029':
@@ -591,7 +587,7 @@ var lexStates = {
                 break;
 
             case undefined:
-                throw invalidChar();
+                throw invalidChar(read());
         }
 
         buffer += read();
@@ -602,8 +598,9 @@ var lexStates = {
             case '[':
                 return newToken('punctuator', read());
 
-            case undefined:
-                return newToken('eof');
+            // This code is unreachable since the default lexState handles eof.
+            // case undefined:
+            //     return newToken('eof')
         }
 
         lexState = 'value';
@@ -637,16 +634,14 @@ var lexStates = {
             return;
         }
 
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     },
     afterPropertyName: function afterPropertyName() {
         if (c === ':') {
             return newToken('punctuator', read());
         }
 
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     },
     beforePropertyValue: function beforePropertyValue() {
         lexState = 'value';
@@ -658,8 +653,7 @@ var lexStates = {
                 return newToken('punctuator', read());
         }
 
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     },
     beforeArrayValue: function beforeArrayValue() {
         if (c === ']') {
@@ -675,8 +669,16 @@ var lexStates = {
                 return newToken('punctuator', read());
         }
 
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
+    },
+    end: function end() {
+        // This code is unreachable since it's handled by the default lexState.
+        // if (c === undefined) {
+        //     read()
+        //     return newToken('eof')
+        // }
+
+        throw invalidChar(read());
     }
 };
 
@@ -701,8 +703,7 @@ function literal(s) {
             var p = peek();
 
             if (p !== _c) {
-                read();
-                throw invalidChar(p);
+                throw invalidChar(read());
             }
 
             read();
@@ -766,7 +767,7 @@ function escape() {
         case '\u2028':
         case '\u2029':
             read();
-            return '\n';
+            return '';
 
         case '\r':
             read();
@@ -774,10 +775,10 @@ function escape() {
                 read();
             }
 
-            return '\n';
+            return '';
 
         case undefined:
-            throw invalidChar(c);
+            throw invalidChar(read());
     }
 
     return read();
@@ -788,16 +789,14 @@ function hexEscape() {
     var c = peek();
 
     if (!_util2.default.isHexDigit(c)) {
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     }
 
     buffer += read();
 
     c = peek();
     if (!_util2.default.isHexDigit(c)) {
-        read();
-        throw invalidChar(c);
+        throw invalidChar(read());
     }
 
     buffer += read();
@@ -812,8 +811,7 @@ function unicodeEscape() {
     while (count-- > 0) {
         var _c2 = peek();
         if (!_util2.default.isHexDigit(_c2)) {
-            read();
-            throw invalidChar(_c2);
+            throw invalidChar(read());
         }
 
         buffer += read();
@@ -835,20 +833,22 @@ var parseStates = {
                 return;
 
             case 'punctuator':
-                if (token.value !== '}') {
-                    throw invalidToken();
-                }
+                // This code is unreachable since it's handled by the lexState.
+                // if (token.value !== '}') {
+                //     throw invalidToken()
+                // }
 
                 pop();
-                return;
         }
 
-        throw invalidToken();
+        // This code is unreachable since it's handled by the lexState.
+        // throw invalidToken()
     },
     afterPropertyName: function afterPropertyName() {
-        if (token.type !== 'punctuator' || token.value !== ':') {
-            throw invalidToken();
-        }
+        // This code is unreachable since it's handled by the lexState.
+        // if (token.type !== 'punctuator' || token.value !== ':') {
+        //     throw invalidToken()
+        // }
 
         parseState = 'beforePropertyValue';
     },
@@ -864,9 +864,10 @@ var parseStates = {
         push();
     },
     afterPropertyValue: function afterPropertyValue() {
-        if (token.type !== 'punctuator') {
-            throw invalidToken();
-        }
+        // This code is unreachable since it's handled by the lexState.
+        // if (token.type !== 'punctuator') {
+        //     throw invalidToken()
+        // }
 
         switch (token.value) {
             case ',':
@@ -875,15 +876,16 @@ var parseStates = {
 
             case '}':
                 pop();
-                return;
         }
 
-        throw invalidToken();
+        // This code is unreachable since it's handled by the lexState.
+        // throw invalidToken()
     },
     afterArrayValue: function afterArrayValue() {
-        if (token.type !== 'punctuator') {
-            throw invalidToken();
-        }
+        // This code is unreachable since it's handled by the lexState.
+        // if (token.type !== 'punctuator') {
+        //     throw invalidToken()
+        // }
 
         switch (token.value) {
             case ',':
@@ -892,15 +894,16 @@ var parseStates = {
 
             case ']':
                 pop();
-                return;
         }
 
-        throw invalidToken();
+        // This code is unreachable since it's handled by the lexState.
+        // throw invalidToken()
     },
     end: function end() {
-        if (token.type !== 'eof') {
-            throw invalidToken();
-        }
+        // This code is unreachable since it's handled by the lexState.
+        // if (token.type !== 'eof') {
+        //     throw invalidToken()
+        // }
     }
 };
 
@@ -928,8 +931,9 @@ function push() {
             value = token.value;
             break;
 
-        default:
-            throw invalidToken();
+        // This code is unreachable.
+        // default:
+        //     throw invalidToken()
     }
 
     if (root === undefined) {
@@ -976,37 +980,75 @@ function pop() {
     }
 }
 
-function invalidParseState() {
-    return new Error('JSON5: invalid parse state \'' + parseState + '\'');
-}
+// This code is unreachable.
+// function invalidParseState () {
+//     return new Error(`JSON5: invalid parse state '${parseState}'`)
+// }
 
-function invalidLexState(state) {
-    return new Error('JSON5: invalid lex state \'' + state);
-}
+// This code is unreachable.
+// function invalidLexState (state) {
+//     return new Error(`JSON5: invalid lex state '${state}'`)
+// }
 
 function invalidChar(c) {
     if (c === undefined) {
-        return new SyntaxError('JSON5: invalid end of input at ' + line + ':' + column);
+        return syntaxError('JSON5: invalid end of input at ' + line + ':' + column);
     }
 
-    return new SyntaxError('JSON5: invalid character \'' + c + '\' at ' + line + ':' + column);
+    return syntaxError('JSON5: invalid character \'' + formatChar(c) + '\' at ' + line + ':' + column);
 }
 
-function invalidToken() {
-    if (token.type === 'eof') {
-        return new SyntaxError('JSON5: invalid end of input at ' + line + ':' + column);
-    }
+// This code is unreachable.
+// function invalidToken () {
+//     if (token.type === 'eof') {
+//         return syntaxError(`JSON5: invalid end of input at ${line}:${column}`)
+//     }
 
-    var c = String.fromCodePoint(token.value.codePointAt(0));
-    return new SyntaxError('JSON5: invalid character \'' + c + '\' at ' + line + ':' + column);
-}
+//     const c = String.fromCodePoint(token.value.codePointAt(0))
+//     return syntaxError(`JSON5: invalid character '${formatChar(c)}' at ${line}:${column}`)
+// }
 
 function invalidIdentifier() {
-    return new SyntaxError('JSON5: invalid character \'' + c + '\' at ' + line + ':' + column);
+    column -= 5;
+    return syntaxError('JSON5: invalid identifier character at ' + line + ':' + column);
 }
 
 function separatorChar(c) {
     console.warn('JSON5: \'' + c + '\' is not valid ECMAScript; consider escaping');
+}
+
+function formatChar(c) {
+    var replacements = {
+        "'": "\\'",
+        '"': '\\"',
+        '\b': '\\b',
+        '\f': '\\f',
+        '\n': '\\n',
+        '\r': '\\r',
+        '\t': '\\t',
+        '\v': '\\v',
+        '\0': '\\0',
+        '\u2028': '\\u2028',
+        '\u2029': '\\u2029'
+    };
+
+    if (replacements[c]) {
+        return replacements[c];
+    }
+
+    if (c < ' ') {
+        var hexString = c.charCodeAt(0).toString(16);
+        return '\\x' + ('00' + hexString).substring(hexString.length);
+    }
+
+    return c;
+}
+
+function syntaxError(message) {
+    var err = new SyntaxError(message);
+    err.lineNumber = line;
+    err.columnNumber = column;
+    return err;
 }
 
 exports.default = module.exports = parse;
@@ -1031,6 +1073,7 @@ var indent = void 0;
 var propertyList = void 0;
 var replacerFunc = void 0;
 var gap = void 0;
+var quote = void 0;
 
 function stringify(value, replacer, space) {
     stack = [];
@@ -1038,6 +1081,12 @@ function stringify(value, replacer, space) {
     propertyList = undefined;
     replacerFunc = undefined;
     gap = '';
+
+    if (replacer != null && (typeof replacer === 'undefined' ? 'undefined' : _typeof(replacer)) === 'object' && !Array.isArray(replacer)) {
+        space = replacer.space;
+        quote = replacer.quote;
+        replacer = replacer.replacer;
+    }
 
     if (typeof replacer === 'function') {
         replacerFunc = replacer;
@@ -1195,13 +1244,13 @@ function quoteString(value) {
         }
     }
 
-    var quote = Object.keys(quotes).reduce(function (a, b) {
+    var quoteChar = quote || Object.keys(quotes).reduce(function (a, b) {
         return quotes[a] < quotes[b] ? a : b;
     });
 
-    product = product.replace(new RegExp(quote, 'g'), replacements[quote]);
+    product = product.replace(new RegExp(quoteChar, 'g'), replacements[quoteChar]);
 
-    return quote + product + quote;
+    return quoteChar + product + quoteChar;
 }
 
 function serializeObject(value) {
