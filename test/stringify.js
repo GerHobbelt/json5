@@ -13,7 +13,7 @@ var JSON5 = require('../lib/json5');
 var simpleCases = [
     null,
     9, -9, +9, +9.878,
-    '', "''", '999', '9aa', 'aaa', 'aa a', 'aa\na', 'aa\\a', '\'', '\\\'', '\\"',
+    '', "''", '999', '9aa', 'aaa', 'aa a', 'aa\\a', '\'', '\\\'', '\\"',
     undefined,
     true, false,
     {}, [], function(){},
@@ -22,8 +22,34 @@ var simpleCases = [
 
 exports.stringify = {};
 exports.stringify.simple = function test() {
-    for (var i=0; i<simpleCases.length; i++) {
+    for (var i = 0; i < simpleCases.length; i++) {
         assertStringify(simpleCases[i]);
+    }
+};
+
+exports.stringify.multilineStrings = function test() {
+    // JSON5.parse() says: "CR and CRLF get transformed to LF when the string being parsed is a `string template` type."
+    var testcases = [
+        `abc`,                                          'abc',
+        `a\naa\r\na`,                                   'a\naa\na',
+        `a\r\r\r\r\r\naaaa\v\f\b\r\n\\\`\`aa\u1234`,    'a\n\n\n\n\naaaa\v\f\b\n\\``aa\u1234',
+    ];
+    for (var i = 0, len = testcases.length; i < len; i += 2) {
+        var obj = testcases[i];
+        var sollWert = testcases[i + 1];
+        var origStr = JSON5.stringify(obj);
+        console.error("test:", {i, obj, origStr, sollWert});
+        var roundTripStr;
+        if (origStr !== "undefined" && typeof origStr !== "undefined") {
+            try {
+                roundTripStr = JSON5.parse(origStr);
+            } catch (e) {
+                console.log(e);
+                console.log(origStr);    
+                throw e;
+            }
+            assert.equal(sollWert, roundTripStr);
+        }
     }
 };
 
@@ -55,7 +81,7 @@ exports.stringify.arrays = function test() {
     assertStringify([1, 2]);
     assertStringify([undefined]);
     assertStringify([1, 'fasds']);
-    assertStringify([1, '\n\b\t\f\r\'']);
+    assertStringify([1, '\b\t\f\'']);
     assertStringify([1, 'fasds', ['fdsafsd'], null]);
     assertStringify([1, 'fasds', ['fdsafsd'], null, function(aaa) { return 1; }, false ]);
     assertStringify([1, 'fasds', ['fdsafsd'], undefined, function(aaa) { return 1; }, false ]);
