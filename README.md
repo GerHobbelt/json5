@@ -11,8 +11,9 @@ The JSON5 Data Interchange Format (JSON5) is a superset of [JSON] that aims to
 alleviate some of the limitations of JSON by expanding its syntax to include
 some productions from [ECMAScript 5.1].
 
-This JavaScript library is the official reference implementation for JSON5
-parsing and serialization libraries.
+This JavaScript library is a derivative of the official reference implementation for JSON5
+parsing and serialization libraries, where this derivative includes a few extra features: 
+these extras are marked with XXXXXXXXX in the feature list further below.
 
 [Build Status]: https://travis-ci.org/json5/json5
 
@@ -22,29 +23,6 @@ parsing and serialization libraries.
 
 [ECMAScript 5.1]: https://www.ecma-international.org/ecma-262/5.1/
 
-## Summary of Features
-The following ECMAScript 5.1 features, which are not supported in JSON, have
-been extended to JSON5.
-
-
----
-
-JSON is an excellent data format, but we think it can be better.
-
-**JSON5 is an extension to JSON** that aims to make it easier for
-*humans to write and maintain* by hand by adding minimal
-syntax features directly from ECMAScript 5.
-
-JSON5 remains a **strict subset of JavaScript**, adds **no new data types**,
-and **works with all existing JSON content**.
-
-JSON5 is *not* an official successor to JSON, and JSON5 content may *not*
-work with existing JSON parsers. For this reason, JSON5 files use a new .json5
-extension. *(TODO: new MIME type needed too.)*
-
-The code here is a **reference JavaScript implementation** for both Node.js
-and all browsers. It’s based directly off of Douglas Crockford’s own [JSON
-implementation][json_parse.js], and it’s both robust and secure.
 
 
 ## Why
