@@ -220,7 +220,7 @@ properties if a replacer array is specified.
   space. If this parameter is not provided (or is null), no white space is used.
   If white space is used, trailing commas will be used in objects and arrays.
 - `options`: An object with the following properties:
-  - `replacer`: Same as the `replacer` paramter.
+  - `replacer`: Same as the `replacer` parameter.
   - `space`: Same as the `space` parameter.
   - `quote`: A String representing the quote character to use when serializing
     strings.
@@ -319,10 +319,10 @@ reading: [Suggested Improvements to JSON](http://bolinfest.com/essays/json.html)
 
 [Douglas Crockford](http://www.crockford.com/) of course designed and built
 JSON, but his state machine diagrams on the [JSON website](http://json.org/), as
-cheesy as it may sound, gave me motivation and confidence that building a new
-parser to implement these ideas this was within my reach! The original
+cheesy as it may sound, gave us motivation and confidence that building a new
+parser to implement these ideas was within reach! The original
 implementation of JSON5 was also modeled directly off of Doug’s open-source
-[json_parse.js] parser. I’m super grateful for that clean and well-documented
+[json_parse.js] parser. We’re grateful for that clean and well-documented
 code.
 
 [json_parse.js]:
