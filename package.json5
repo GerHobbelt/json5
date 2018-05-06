@@ -3,17 +3,18 @@
 
 {
     name: '@gerhobbelt/json5',
-    version: '1.0.0-22.beta.4',
+    version: '1.0.0',
     description: 'JSON for humans.',
     main: 'lib/index.js',
     bin: 'lib/cli.js',
     browser: 'dist/index.js',
-  "files": [
-    "lib/",
-    "dist/"
-  ],
+    files: [
+        "lib/",
+        "dist/"
+    ],
     scripts: {
-    "build": "babel-node build/build.js && babel src -d lib && rollup -c",
+        build: 'babel-node build/build.js && babel src -d lib && rollup -c',
+        coverage: 'nyc report --reporter=text-lcov | coveralls',
     "lint": "eslint --fix build src",
     "prepublishOnly": "npm run lint && npm test && npm run production",
     "pretest": "cross-env NODE_ENV=test npm run build",
@@ -29,7 +30,7 @@
     },
     repository: {
         type: 'git',
-        url: 'https://github.com/json5/json5',
+        url: 'git+https://github.com/json5/json5.git'
     },
     keywords: [
         'json',
@@ -40,48 +41,46 @@
     ],
     author: 'Aseem Kishore <aseem.kishore@gmail.com>',
     contributors: [
-        // TODO: Should we remove this section in favor of GitHub's list?
-        // https://github.com/json5/json5/contributors
         'Max Nanasy <max.nanasy@gmail.com>',
         'Andrew Eisenberg <andrew@eisenberg.as>',
         'Jordan Tucker <jordanbtucker@gmail.com>',
     ],
     license: 'MIT',
-  "bugs": {
-    "url": "https://github.com/json5/json5/issues"
-  },
+    files: ['lib/'],
+    bugs: {
+      url: "https://github.com/json5/json5/issues"
+    },
     homepage: 'http://json5.org/',
-  "dependencies": {
-    "minimist": "1.2.0",
-    "yargs": "10.0.3"
-  },
+    dependencies: {
+    	minimist: "1.2.0"
+  	},
     devDependencies: {
-    "babel-cli": "6.26.0",
-    "babel-core": "6.26.0",
-    "babel-plugin-add-module-exports": "0.2.1",
-    "babel-plugin-external-helpers": "6.22.0",
-    "babel-plugin-istanbul": "4.1.5",
-    "babel-preset-env": "1.6.1",
-    "babel-register": "6.26.0",
-    "babelrc-rollup": "3.0.0",
-    "cross-env": "5.1.1",
-    "del": "3.0.0",
-    "eslint": "4.13.1",
-    "eslint-config-standard": "11.0.0-beta.0",
-    "eslint-plugin-import": "2.8.0",
-    "eslint-plugin-node": "5.2.1",
-    "eslint-plugin-promise": "3.6.0",
-    "eslint-plugin-standard": "3.0.1",
-    "mocha": "4.0.1",
-    "nyc": "11.4.1",
-    "regenerate": "1.3.3",
-    "rollup": "0.52.3",
-    "rollup-plugin-babel": "3.0.3",
-    "rollup-plugin-commonjs": "8.2.6",
-    "rollup-plugin-node-resolve": "3.0.0",
-    "rollup-plugin-uglify": "2.0.1",
-    "sinon": "4.1.3",
-    "unicode-9.0.0": "0.7.4",
-        istanbul: '0.4.5',
+	    "babel-cli": "6.26.0",
+	    "babel-core": "6.26.0",
+	    "babel-plugin-add-module-exports": "0.2.1",
+	    "babel-plugin-external-helpers": "6.22.0",
+	    "babel-plugin-istanbul": "4.1.5",
+	    "babel-preset-env": "1.6.1",
+	    "babel-register": "6.26.0",
+	    "babelrc-rollup": "3.0.0",
+	    "coveralls": "3.0.0",
+	    "cross-env": "5.1.4",
+	    "del": "3.0.0",
+	    "eslint": "4.18.2",
+	    "eslint-config-standard": "11.0.0",
+	    "eslint-plugin-import": "2.9.0",
+	    "eslint-plugin-node": "6.0.1",
+	    "eslint-plugin-promise": "3.7.0",
+	    "eslint-plugin-standard": "3.0.1",
+	    "mocha": "5.0.4",
+	    "nyc": "11.4.1",
+	    "regenerate": "1.3.3",
+	    "rollup": "0.56.5",
+	    "rollup-plugin-babel": "3.0.3",
+	    "rollup-plugin-commonjs": "9.0.0",
+	    "rollup-plugin-node-resolve": "3.2.0",
+	    "rollup-plugin-uglify": "3.0.0",
+	    "sinon": "4.4.2",
+	    "unicode-9.0.0": "0.7.5"
     },
 }
