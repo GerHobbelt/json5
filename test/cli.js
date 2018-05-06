@@ -9,7 +9,7 @@ const cliPath = path.resolve(__dirname, '../lib/cli.js')
 
 tap.test('CLI', t => {
     t.test('converts JSON5 to JSON from stdin to stdout', t => {
-        const proc = child.spawn(process.execPath, [cliPath])
+        const proc = child.spawn(process.execPath, [cliPath, '-c'])
         let output = ''
         proc.stdout.on('data', data => {
             output += data
@@ -28,6 +28,8 @@ tap.test('CLI', t => {
             process.execPath,
             [
                 cliPath,
+                '-c',
+                '-o-',
                 path.resolve(__dirname, 'test.json5'),
             ]
         )
@@ -51,6 +53,7 @@ tap.test('CLI', t => {
                 path.resolve(__dirname, 'test.json5'),
                 '-s',
                 '4',
+                '-o-',
             ]
         )
 
@@ -60,7 +63,7 @@ tap.test('CLI', t => {
         })
 
         proc.stdout.on('end', () => {
-            assert.strictEqual(output, '{\n    "a": 1,\n    "b": 2\n}')
+            assert.strictEqual(output, '{\n    a: 1,\n    b: 2,\n}\n')
             t.end()
         })
     })
@@ -73,6 +76,7 @@ tap.test('CLI', t => {
                 path.resolve(__dirname, 'test.json5'),
                 '-s',
                 't',
+                '-o-',
             ]
         )
 
@@ -82,16 +86,17 @@ tap.test('CLI', t => {
         })
 
         proc.stdout.on('end', () => {
-            assert.strictEqual(output, '{\n\t"a": 1,\n\t"b": 2\n}')
+            assert.strictEqual(output, '{\n\ta: 1,\n\tb: 2,\n}\n')
             t.end()
         })
     })
 
-    t.test('outputs to the specified file', t => {
+    t.test('outputs JSON to the specified file', t => {
         const proc = child.spawn(
             process.execPath,
             [
                 cliPath,
+                '-c',
                 path.resolve(__dirname, 'test.json5'),
                 '-o',
                 path.resolve(__dirname, 'output.json'),
@@ -116,6 +121,33 @@ tap.test('CLI', t => {
         })
     })
 
+    t.test('outputs JSON5 to the specified file', t => {
+        const proc = child.spawn(
+            process.execPath,
+            [
+                cliPath,
+                path.resolve(__dirname, 'test2.json'),
+            ]
+        )
+
+        proc.on('exit', () => {
+            assert.strictEqual(
+                fs.readFileSync(
+                    path.resolve(__dirname, 'test2.json5'),
+                    'utf8'
+                ),
+                '{a:1,b:2,c:\'d\'}'
+            )
+            t.end()
+        })
+
+        t.tearDown(() => {
+            try {
+                fs.unlinkSync(path.resolve(__dirname, 'test2.json5'))
+            } catch (err) {}
+        })
+    })
+
     t.test('validates valid JSON5 files', t => {
         const proc = child.spawn(
             process.execPath,
@@ -130,6 +162,21 @@ tap.test('CLI', t => {
             assert.strictEqual(code, 0)
             t.end()
         })
+    })
+
+    t.test('validates valid JSON5 from stdin', t => {
+        const proc = child.spawn(process.execPath, [cliPath, '-v'])
+        let output = ''
+        proc.stdout.on('data', data => {
+            output += data
+        })
+
+        proc.stdout.on('end', () => {
+            assert.strictEqual(output, '\t\u001b[32;1minput is valid.\u001b[0m\n')
+            t.end()
+        })
+
+        fs.createReadStream(path.resolve(__dirname, 'test.json5')).pipe(proc.stdin)
     })
 
     t.test('validates invalid JSON5 files', t => {
