@@ -1,20 +1,24 @@
-// require.js
-// Tests JSON5's require() hook.
-//
-// Important: expects the following test cases to be present:
-// - /parse-cases/misc/npm-package.json
-// - /parse-cases/misc/npm-package.json5
+const assert = require('assert')
+const sinon = require('sinon')
 
-"use strict";
+require('tap').mochaGlobals()
 
-var assert = require('assert');
+describe('require(*.json5)', () => {
+    it('parses a JSON5 document', () => {
+        require('../lib/register')
+        assert.deepStrictEqual({a: 1, b: 2}, require('./test.json5'))
+    })
 
-exports['misc'] = {};
-exports['misc']['require hook'] = function () {
-    require('../lib/require');
+    it('is backward compatible with v0.5.1, but gives a deprecation warning', () => {
+        const mock = sinon.mock(console)
+        mock.expects('warn').once().withExactArgs("'json5/require' is deprecated. Please use 'json5/register' instead.")
+        require('../lib/require')
+        assert.deepStrictEqual({a: 1, b: 2}, require('./test.json5'))
+        mock.verify()
+    })
 
-    var json = require('./parse-cases/misc/npm-package.json');
-    var json5 = require('./parse-cases/misc/npm-package.json5');
-
-    assert.deepEqual(json5, json);
-};
+    it('throws on invalid JSON5', () => {
+        require('../lib/register')
+        assert.throws(() => { require('./invalid.json5') }, SyntaxError)
+    })
+})
