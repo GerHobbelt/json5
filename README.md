@@ -220,6 +220,16 @@ as well. *(TODO: Any implemented `toJSON` methods aren’t used today.)*
 
 [json-stringify]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify
 
+Added feature: `JSON5.stringify()` has a *fourth* optional argument: a callback function which gets invoked when a circular reference is found in the data to stringify. Thus you can decide to either throw the provided exception (the classic behaviour) or produce an alternative, non-cyclic structure instead as a return value of the callback.
+
+Interface of the callback:
+
+    function circularRefHandler(obj, i, objStack, holder, key, err)
+
+where `obj` is the circular item, which references the already serialized element at index `i` in the `objStack` cache. The current (circular) item is otherwise identified as the item at `key` in the `holder` object which is [part of] the original data object passed to `JSON5.stringify()`.
+
+`err` is a reference to the premade JSON5 exception, which may be thrown by the callback when you wish to emulate the classic `JSON5.stringify()` behaviour.
+
 
 ### Extras
 
