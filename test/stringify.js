@@ -1,667 +1,332 @@
-// tests stringify()
+const assert = require('assert')
+const JSON5 = require('../lib')
 
-// set to true to show performance stats
-var DEBUG = false;
+require('tap').mochaGlobals()
 
-var assert = require('assert');
-var JSON5 = require('../lib/json5');
+describe('JSON5', () => {
+    describe('#stringify', () => {
+        describe('objects', () => {
+            it('stringifies empty objects', () => {
+                assert.strictEqual(JSON5.stringify({}), '{}')
+            })
 
-// Test JSON5.stringify() by comparing its output for each case with 
-// native JSON.stringify().  The only differences will be in how object keys are 
-// handled.
+            it('stringifies unquoted property names', () => {
+                assert.strictEqual(JSON5.stringify({a: 1}), '{a:1}')
+            })
 
-var simpleCases = [
-    null,
-    9, -9, +9, +9.878,
-    '', "''", '999', '9aa', 'aaa', 'aa a', 'aa\\a', '\'', '\\\'', '\\"',
-    undefined,
-    true, false,
-    {}, [], function(){},
-    Date.now(), new Date(Date.now())
-];
+            it('stringifies single quoted string property names', () => {
+                assert.strictEqual(JSON5.stringify({'a-b': 1}), "{'a-b':1}")
+            })
 
-exports.stringify = {};
-exports.stringify.simple = function test() {
-    for (var i = 0; i < simpleCases.length; i++) {
-        assertStringify(simpleCases[i]);
-    }
-};
+            it('stringifies double quoted string property names', () => {
+                assert.strictEqual(JSON5.stringify({"a'": 1}), `{"a'":1}`)
+            })
 
-exports.stringify.multilineStrings = function test() {
-    // JSON5.parse() says: "CR and CRLF get transformed to LF when the string being parsed is a `string template` type."
-    var testcases = [
-        `abc`,                                          'abc',
-        `a\naa\r\na`,                                   'a\naa\na',
-        `a\r\r\r\r\r\naaaa\v\f\b\r\n\\\`\`aa\u1234`,    'a\n\n\n\n\naaaa\v\f\b\n\\``aa\u1234',
-    ];
-    for (var i = 0, len = testcases.length; i < len; i += 2) {
-        var obj = testcases[i];
-        var sollWert = testcases[i + 1];
-        var origStr = JSON5.stringify(obj);
-        console.error("test:", {i, obj, origStr, sollWert});
-        var roundTripStr;
-        if (origStr !== "undefined" && typeof origStr !== "undefined") {
-            try {
-                roundTripStr = JSON5.parse(origStr);
-            } catch (e) {
-                console.log(e);
-                console.log(origStr);    
-                throw e;
-            }
-            assert.equal(sollWert, roundTripStr);
-        }
-    }
-};
+            it('stringifies empty string property names', () => {
+                assert.strictEqual(JSON5.stringify({'': 1}), "{'':1}")
+            })
 
-exports.stringify.oddities = function test() {
-    assertStringify(Function);
-    assertStringify(Date);
-    assertStringify(Object);
-    assertStringify(NaN);
-    assertStringify(Infinity);
-    assertStringify(10e6);
-    assertStringify(19.3223e6);
-    assertStringify(077);
-    assertStringify(0x99);
-    assertStringify(/aa/);
-    assertStringify(new RegExp('aa'));
-    
-    assertStringify(new Number(7));
-    assertStringify(new String(7));
-    assertStringify(new String(""));
-    assertStringify(new String("abcde"));
-    assertStringify(new String(new String("abcde")));
-    assertStringify(new Boolean(true));
-    assertStringify(new Boolean());
-};
+            it('stringifies special character property names', () => {
+                assert.strictEqual(JSON5.stringify({$_: 1, _$: 2, 'a\u200C': 3}), '{$_:1,_$:2,a\u200C:3}')
+            })
 
-exports.stringify.arrays = function test() {
-    assertStringify([]);
-    assertStringify([""]);
-    assertStringify([1, 2]);
-    assertStringify([undefined]);
-    assertStringify([1, 'fasds']);
-    assertStringify([1, '\b\t\f\'']);
-    assertStringify([1, 'fasds', ['fdsafsd'], null]);
-    assertStringify([1, 'fasds', ['fdsafsd'], null, function(aaa) { return 1; }, false ]);
-    assertStringify([1, 'fasds', ['fdsafsd'], undefined, function(aaa) { return 1; }, false ]);
-};
+            it('stringifies unicode property names', () => {
+                assert.strictEqual(JSON5.stringify({'ùńîċõďë': 9}), '{ùńîċõďë:9}')
+            })
 
-exports.stringify.objects = function test() {
-    assertStringify({a:1, b:2});
-    assertStringify({"":1, b:2});
-    assertStringify({9:1, b:2});
-    assertStringify({"9aaa":1, b:2});
-    assertStringify({aaaa:1, bbbb:2});
-    assertStringify({a$a_aa:1, bbbb:2});
-    assertStringify({"a$a_aa":1, 'bbbb':2});
-    assertStringify({"a$a_aa":[1], 'bbbb':{a:2}});
-    assertStringify({"a$22222_aa":[1], 'bbbb':{aaaa:2, name:function(a,n,fh,h) { return 'nuthin'; }, foo: undefined}});
-    assertStringify({"a$222222_aa":[1], 'bbbb':{aaaa:2, name:'other', foo: undefined}});
-    assertStringify({"a$222222_aa":[1, {}, undefined, function() { }, { jjj: function() { } }], 'bbbb':{aaaa:2, name:'other', foo: undefined}});
-    
-    // using same obj multiple times
-    var innerObj = {a: 9, b:6};
-    assertStringify({a : innerObj, b: innerObj, c: [innerObj, innerObj, innerObj]});
-};
+            it('stringifies escaped property names', () => {
+                assert.strictEqual(JSON5.stringify({'\\\b\f\n\r\t\v\0\x01': 1}), "{'\\\\\\b\\f\\n\\r\\t\\v\\0\\x01':1}")
+            })
 
-exports.stringify.oddKeys = function test() {
-    assertStringify({"this is a crazy long key":1, 'bbbb':2});
-    assertStringify({"":1, 'bbbb':2});
-    assertStringify({"s\ns":1, 'bbbb':2});
-    assertStringify({'\n\b\t\f\r\'\\':1, 'bbbb':2});
-    assertStringify({undefined:1, 'bbbb':2});
-    assertStringify({'\x00':'\x00'});
-};
+            it('stringifies multiple properties', () => {
+                assert.strictEqual(JSON5.stringify({abc: 1, def: 2}), '{abc:1,def:2}')
+            })
 
-// we expect errors from all of these tests.  The errors should match
-exports.stringify.circular = function test() {
-    var obj = { };
-    obj.obj = obj;
-    assertStringify(obj, null, true);
+            it('stringifies nested objects', () => {
+                assert.strictEqual(JSON5.stringify({a: {b: 2}}), '{a:{b:2}}')
+            })
+        })
 
-    var obj2 = {inner1: {inner2: {}}};
-    obj2.inner1.inner2.obj = obj2;
-    assertStringify(obj2, null, true);
+        describe('arrays', () => {
+            it('stringifies empty arrays', () => {
+                assert.strictEqual(JSON5.stringify([]), '[]')
+            })
 
-    var obj3 = {inner1: {inner2: []}};
-    obj3.inner1.inner2[0] = obj3;
-    assertStringify(obj3, null, true);
-};
+            it('stringifies array values', () => {
+                assert.strictEqual(JSON5.stringify([1]), '[1]')
+            })
 
-// we expect errors from all of these tests.  
-// The errors should be caught by JSON5.stringify 
-// and produce valid output via the 4th arg: callback.
-exports.stringify.circular_with_recovery_callback = function test() {
-    var altobj = { cycle: '[circular!]' };
+            it('stringifies multiple array values', () => {
+                assert.strictEqual(JSON5.stringify([1, 2]), '[1,2]')
+            })
 
-    var obj1 = { };
-    obj1.obj = obj1;
+            it('stringifies nested arrays', () => {
+                assert.strictEqual(JSON5.stringify([1, [2, 3]]), '[1,[2,3]]')
+            })
+        })
 
-    var refobj1 = { 
-        obj: {
-            alt: altobj,
-            index: 0,
-            key: 'obj',
-            err: {
-                message: "Converting circular structure to JSON",
-                name: "TypeError",
-            }
-        } 
-    };
-    assertStringifyWithCircularyHandling(obj1, refobj1, function chk1(obj, i, cache, holder, key, err) {
-        assert.strictEqual(holder[key], cache[i]);
-        return {
-            alt: altobj,
-            index: i,
-            key: key,
-            err: err
-        };
-    });
+        it('stringifies nulls', () => {
+            assert.strictEqual(JSON5.stringify(null), 'null')
+        })
 
-    var obj2 = {inner1: {inner2: {}}};
-    obj2.inner1.inner2.obj = obj2;
+        it('returns undefined for functions', () => {
+            assert.strictEqual(JSON5.stringify(() => {}), undefined)
+        })
 
-    var refobj2 = { 
-        inner1: {
-            inner2: {
-                obj: {
-                    alt: altobj,
-                    index: 0,
-                    key: 'obj',
-                    err: {
-                        message: "Converting circular structure to JSON",
-                        name: "TypeError",
-                    }
-                } 
-            }
-        }
-    };
-    assertStringifyWithCircularyHandling(obj2, refobj2, function chk2(obj, i, cache, holder, key, err) {
-        assert.strictEqual(holder[key], cache[i]);
-        return {
-            alt: altobj,
-            index: i,
-            key: key,
-            err: err
-        };
-    });
+        it('ignores function properties', () => {
+            assert.strictEqual(JSON5.stringify({a () {}}), '{}')
+        })
 
-    var obj3 = {inner1: {inner2: []}};
-    obj3.inner1.inner2[0] = obj3;
+        it('returns null for functions in arrays', () => {
+            assert.strictEqual(JSON5.stringify([() => {}]), '[null]')
+        })
 
-    var refobj3 = { 
-        inner1: {
-            inner2: [
-                {
-                    alt: altobj,
-                    index: 0,
-                    key: 0,
-                    err: {
-                        message: "Converting circular structure to JSON",
-                        name: "TypeError",
-                    }
-                } 
-            ]
-        }
-    };
-    assertStringifyWithCircularyHandling(obj3, refobj3, function chk2(obj, i, cache, holder, key, err) {
-        assert.strictEqual(holder[key], cache[i]);
-        return {
-            alt: altobj,
-            index: i,
-            key: key,
-            err: err
-        };
-    });
+        describe('Booleans', () => {
+            it('stringifies true', () => {
+                assert.strictEqual(JSON5.stringify(true), 'true')
+            })
 
-    var obj4 = {inner1: {inner2: []}};
-    obj4.inner1.inner2[0] = obj4.inner1;
+            it('stringifies false', () => {
+                assert.strictEqual(JSON5.stringify(false), 'false')
+            })
 
-    var refobj4 = { 
-        inner1: {
-            inner2: [
-                {
-                    alt: altobj,
-                    index: 1,
-                    key: 0,
-                    err: {
-                        message: "Converting circular structure to JSON",
-                        name: "TypeError",
-                    }
-                } 
-            ]
-        }
-    };
-    assertStringifyWithCircularyHandling(obj4, refobj4, function chk2(obj, i, cache, holder, key, err) {
-        assert.strictEqual(holder[key], cache[i]);
-        return {
-            alt: altobj,
-            index: i,
-            key: key,
-            err: err
-        };
-    });
-};
+            it('stringifies true Boolean objects', () => {
+                // eslint-disable-next-line no-new-wrappers
+                assert.strictEqual(JSON5.stringify(new Boolean(true)), 'true')
+            })
 
-exports.stringify.replacerType = function test() {
-    var assertStringifyJSON5ThrowsExceptionForReplacer = function(replacer) {
-        assert.throws(
-            function() { JSON5.stringify(null, replacer); },
-            /Replacer must be a function or an array/
-        );
-    };
-    assertStringifyJSON5ThrowsExceptionForReplacer('string');
-    assertStringifyJSON5ThrowsExceptionForReplacer(123);
-    assertStringifyJSON5ThrowsExceptionForReplacer({});
-};
+            it('stringifies false Boolean objects', () => {
+                // eslint-disable-next-line no-new-wrappers
+                assert.strictEqual(JSON5.stringify(new Boolean(false)), 'false')
+            })
+        })
 
-exports.stringify.replacer = {};
-exports.stringify.replacer.function = {};
+        describe('numbers', () => {
+            it('stringifies numbers', () => {
+                assert.strictEqual(JSON5.stringify(-1.2), '-1.2')
+            })
 
-exports.stringify.replacer.function.simple = function test() {
-    function replacerTestFactory(expectedValue) {
-        return function() {
-            var lastKey = null,
-                lastValue = null,
-                numCalls = 0,
-                replacerThis;
-            return {
-                replacer: function(key, value) {
-                    lastKey = key;
-                    lastValue = value;
-                    numCalls++;
-                    replacerThis = this;
-                    return value;
-                },
-                assert: function() {
-                    assert.equal(numCalls, 1, "Replacer should be called exactly once for " + expectedValue);
-                    assert.equal(lastKey, "");
-                    assert.deepEqual(replacerThis, {"":expectedValue});
-                    var expectedValueToJson = expectedValue;
-                    if (expectedValue && expectedValue['toJSON']) {
-                        expectedValueToJson = expectedValue.toJSON();
-                    }
-                    assert.equal(lastValue, expectedValueToJson);
-                }
-            }
-        }
-    }
-    for (var i=0; i<simpleCases.length; i++) {
-        assertStringify(simpleCases[i], replacerTestFactory(simpleCases[i]));
-    }
-};
+            it('stringifies non-finite numbers', () => {
+                assert.strictEqual(JSON5.stringify([Infinity, -Infinity, NaN]), '[Infinity,-Infinity,NaN]')
+            })
 
-exports.stringify.replacer.function.complexObject = function test() {
-    var obj = {
-        "": "emptyPropertyName",
-        one: 'string',
-        two: 123,
-        three: ['array1', 'array2'],
-        four: {nested_one:'anotherString'},
-        five: new Date(),
-        six: Date.now(),
-        seven: null,
-        eight: true,
-        nine: false,
-        ten: [NaN, Infinity, -Infinity],
-        eleven: function() {}
-    };
-    var expectedKeys = [
-        '', // top level object
-        '', // First key
-        'one',
-        'two',
-        'three', 0, 1, // array keys
-        'four', 'nested_one', // nested object keys
-        'five',
-        'six',
-        'seven',
-        'eight',
-        'nine',
-        'ten', 0, 1, 2, // array keys
-        'eleven'
-    ];
-    var expectedHolders = [
-        {"": obj},
-        obj,
-        obj,
-        obj,
-        obj, obj.three, obj.three,
-        obj, obj.four,
-        obj,
-        obj,
-        obj,
-        obj,
-        obj,
-        obj, obj.ten, obj.ten, obj.ten,
-        obj
-    ];
-    var ReplacerTest = function() {
-        var seenKeys = [];
-        var seenHolders = [];
-        return {
-            replacer: function(key, value) {
-                seenKeys.push(key);
-                seenHolders.push(this);
-                if (typeof(value) == "object") {
-                    return value;
-                }
-                return 'replaced ' + (value ? value.toString() : '');
-            },
-            assert: function() {
-                assert.deepEqual(seenKeys, expectedKeys);
-                assert.deepEqual(seenHolders, expectedHolders);
-            }
-        }
-    };
-    assertStringify(obj, ReplacerTest);
-};
+            it('stringifies Number objects', () => {
+                // eslint-disable-next-line no-new-wrappers
+                assert.strictEqual(JSON5.stringify(new Number(-1.2)), '-1.2')
+            })
+        })
 
-exports.stringify.replacer.function.replacingWithUndefined = function test() {
-    var obj = { shouldSurvive: 'one', shouldBeRemoved: 'two' };
-    var ReplacerTest = function() {
-        return {
-            replacer: function(key, value) {
-                if (key === 'shouldBeRemoved') {
-                    return undefined;
-                } else {
-                    return value;
-                }
-            },
-            assert: function() { /* no-op */ }
-        }
-    };
-    assertStringify(obj, ReplacerTest);
-};
+        describe('strings', () => {
+            it('stringifies single quoted strings', () => {
+                assert.strictEqual(JSON5.stringify('abc'), "'abc'")
+            })
 
-exports.stringify.replacer.function.replacingArrayValueWithUndefined = function test() {
-    var obj = ['should survive', 'should be removed'];
-    var ReplacerTest = function() {
-        return {
-            replacer: function(key, value) {
-                if (value === 'should be removed') {
-                    return undefined;
-                } else {
-                    return value;
-                }
-            },
-            assert: function() { /* no-op */ }
-        }
-    };
-    assertStringify(obj, ReplacerTest);
-};
+            it('stringifies double quoted strings', () => {
+                assert.strictEqual(JSON5.stringify("abc'"), `"abc'"`)
+            })
 
-exports.stringify.replacer.array = {};
+            it('stringifies escaped characters', () => {
+                assert.strictEqual(JSON5.stringify('\\\b\f\n\r\t\v\0\x0f'), "'\\\\\\b\\f\\n\\r\\t\\v\\0\\x0f'")
+            })
 
-exports.stringify.replacer.array.simple = function test() {
-    var ReplacerTest = function() {
-        return {
-            replacer: [],
-            assert: function() { /* no-op */ }
-        }
-    };
-    for (var i=0; i<simpleCases.length; i++) {
-        assertStringify(simpleCases[i], ReplacerTest);
-    }
-};
+            it('stringifies escaped single quotes', () => {
+                assert.strictEqual(JSON5.stringify(`'"`), `'\\'"'`)
+            })
 
-exports.stringify.replacer.array.emptyStringProperty = function test() {
-    var obj = {'': 'keep', 'one': 'remove'};
-    var ReplacerTest = function() {
-        return {
-            replacer: [''],
-            assert: function() {/* no-op */}
-        }
-    };
-    assertStringify(obj, ReplacerTest);
-};
+            it('stringifies escaped double quotes', () => {
+                assert.strictEqual(JSON5.stringify(`''"`), `"''\\""`)
+            })
 
-exports.stringify.replacer.array.complexObject = function test() {
-    var obj = {
-        "": "emptyPropertyName",
-        one: 'string',
-        one_remove: 'string',
-        two: 123,
-        two_remove: 123,
-        three: ['array1', 'array2'],
-        three_remove: ['array1', 'array2'],
-        four: {nested_one:'anotherString', nested_one_remove: 'anotherString'},
-        four_remove: {nested_one:'anotherString', nested_one_remove: 'anotherString'},
-        five: new Date(),
-        five_remove: new Date(),
-        six: Date.now(),
-        six_remove: Date.now(),
-        seven: null,
-        seven_remove: null,
-        eight: true,
-        eight_remove: true,
-        nine: false,
-        nine_remove: false,
-        ten: [NaN, Infinity, -Infinity],
-        ten_remove: [NaN, Infinity, -Infinity],
-        eleven: function() {},
-        eleven_remove: function() {}
-    };
-    var ReplacerTest = function() {
-        return {
-            replacer: [
-                'one', 'two', 'three', 'four', 'nested_one', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 0
-            ],
-            assert: function() {/* no-op */}
-        }
-    };
-    assertStringify(obj, ReplacerTest);
-};
+            it('stringifies escaped line and paragraph separators', () => {
+                assert.strictEqual(JSON5.stringify('\u2028\u2029'), "'\\u2028\\u2029'")
+            })
 
-exports.stringify.toJSON = function test() {
-    var customToJSONObject = {
-        name: 'customToJSONObject',
-        toJSON: function() {
-            return 'custom-to-json-object-serialization';
-        }
-    };
-    assertStringify(customToJSONObject);
+            it('stringifies String objects', () => {
+                // eslint-disable-next-line no-new-wrappers
+                assert.strictEqual(JSON5.stringify(new String('abc')), "'abc'")
+            })
+        })
 
-    var customToJSONPrimitive = "Some string";
-    customToJSONPrimitive.toJSON = function() {
-        return 'custom-to-json-string-serialization';
-    };
-    assertStringify(customToJSONPrimitive);
+        it('stringifies using built-in toJSON methods', () => {
+            assert.strictEqual(JSON5.stringify(new Date('2016-01-01T00:00:00.000Z')), "'2016-01-01T00:00:00.000Z'")
+        })
 
-    var object = {
-        customToJSONObject: customToJSONObject
-    };
-    assertStringify(object);
+        it('stringifies using user defined toJSON methods', () => {
+            function C () {}
+            Object.assign(C.prototype, {toJSON () { return {a: 1, b: 2} }})
+            assert.strictEqual(JSON5.stringify(new C()), '{a:1,b:2}')
+        })
 
-    // Returning an object with a toJSON function does *NOT* have that toJSON function called: it is omitted
-    var nested = {
-        name: 'nested',
-        toJSON: function() {
-            return customToJSONObject;
-        }
-    };
-    assertStringify(nested);
+        it('stringifies using user defined toJSON(key) methods', () => {
+            function C () {}
+            Object.assign(C.prototype, {toJSON (key) { return (key === 'a') ? 1 : 2 }})
+            assert.strictEqual(JSON5.stringify({a: new C(), b: new C()}), '{a:1,b:2}')
+        })
 
-    var count = 0;
-    function createObjectSerialisingTo(value) {
-        count++;
-        return {
-            name: 'obj-' + count,
-            toJSON: function() {
-                return value;
-            }
-        };
-    }
-    assertStringify(createObjectSerialisingTo(null));
-    assertStringify(createObjectSerialisingTo(undefined));
-    assertStringify(createObjectSerialisingTo([]));
-    assertStringify(createObjectSerialisingTo({}));
-    assertStringify(createObjectSerialisingTo(12345));
-    assertStringify(createObjectSerialisingTo(true));
-    assertStringify(createObjectSerialisingTo(new Date()));
-    assertStringify(createObjectSerialisingTo(function(){}));
-};
+        it('stringifies using toJSON5 methods', () => {
+            function C () {}
+            Object.assign(C.prototype, {toJSON5 () { return {a: 1, b: 2} }})
+            assert.strictEqual(JSON5.stringify(new C()), '{a:1,b:2}')
+        })
 
-function stringifyJSON5(obj, replacer, space) {
-    var start, res, end;
-    try {
-        start = new Date();
-        res = JSON5.stringify(obj, replacer, space);
-        end = new Date();
-    } catch (e) {
-        res = e.message;
-        end = new Date();
-    }
-    if (DEBUG) {
-        console.log('JSON5.stringify time: ' + (end-start));
-        console.log(res);
-    }
-    return res;
-}
+        it('stringifies using toJSON5(key) methods', () => {
+            function C () {}
+            Object.assign(C.prototype, {toJSON5 (key) { return (key === 'a') ? 1 : 2 }})
+            assert.strictEqual(JSON5.stringify({a: new C(), b: new C()}), '{a:1,b:2}')
+        })
 
-function stringifyJSON(obj, replacer, space) {
-    var start, res, end;
-    
-    try {
-        start = new Date();
-        res = JSON.stringify(obj, replacer, space);
-        end = new Date();
-    
-        // now remove all quotes from keys where appropriate
-        // first recursively find all key names
-        var keys = [];
-        function findKeys(key, innerObj) {
-            if (innerObj && innerObj.toJSON && typeof innerObj.toJSON === "function") {
-                innerObj = innerObj.toJSON();
-            }
-            if (replacer) {
-                if (typeof replacer === 'function') {
-                    innerObj = replacer(key, innerObj);
-                } else if (key !== '' && replacer.indexOf(key) < 0) {
-                    return;
-                }
-            }
-            if (JSON5.isWord(key) &&
-                typeof innerObj !== 'function' &&
-                typeof innerObj !== 'undefined') {
-                keys.push(key);
-            }
-            if (typeof innerObj === 'object') {
-                if (Array.isArray(innerObj)) {
-                    for (var i = 0; i < innerObj.length; i++) {
-                        findKeys(i, innerObj[i]);
-                    }
-                } else if (innerObj !== null) {
-                    for (var prop in innerObj) {
-                        if (innerObj.hasOwnProperty(prop)) {
-                            findKeys(prop, innerObj[prop]);
-                        }
-                    }
-                }
-            }
-        }
-        findKeys('', obj);
+        it('calls toJSON5 instead of toJSON if both are defined', () => {
+            function C () {}
+            Object.assign(C.prototype, {
+                toJSON () { return {a: 1, b: 2} },
+                toJSON5 () { return {a: 2, b: 2} },
+            })
+            assert.strictEqual(JSON5.stringify(new C()), '{a:2,b:2}')
+        })
 
-        // now replace each key in the result
-        var last = 0;
-        for (var i = 0; i < keys.length; i++) {
-        
-            // not perfect since we can match on parts of the previous value that 
-            // matches the key, but we can design our test around that.
-            last = res.indexOf('"' + keys[i] + '"', last);
-            if (last === -1) {
-                // problem with test framework
-                console.log("Couldn't find: " + keys[i]);
-                throw new Error("Couldn't find: " + keys[i]);
-            }
-            res = res.substring(0, last) + 
-                res.substring(last+1, last + keys[i].length+1) + 
-                res.substring(last + keys[i].length + 2, res.length);
-            last += keys[i].length;
-        }
-    } catch (e) {
-        res = e.message;
-        end = new Date();
-    }
-    if (DEBUG) {
-        console.log('JSON.stringify time: ' + (end-start));
-    }
-    return res;
-}
+        it('throws on circular objects', () => {
+            let a = {}
+            a.a = a
+            assert.throws(() => { JSON5.stringify(a) }, TypeError, 'Converting circular structure to JSON5')
+        })
 
-function assertStringify(obj, replacerTestConstructor, expectError) {
-    if (!replacerTestConstructor) {
-        replacerTestConstructor = function(){
-            return {replacer: null, assert: function(){}};
-        };
-    }
-    var testStringsEqual = function(obj, indent) {
-        var j5ReplacerTest = replacerTestConstructor();
-        var jReplacerTest = replacerTestConstructor();
-        var j5, j;
-        j5 = stringifyJSON5(obj, j5ReplacerTest.replacer, indent);
-        j = stringifyJSON(obj, jReplacerTest.replacer, indent);
-        assert.equal(j5, j);
-        j5ReplacerTest.assert();
-    };
+        it('throws on circular arrays', () => {
+            let a = []
+            a[0] = a
+            assert.throws(() => { JSON5.stringify(a) }, TypeError, 'Converting circular structure to JSON5')
+        })
+    })
 
-    var indents = [
-        undefined,
-        " ",
-        "          ",
-        "                    ",
-        "\t",
-        "this is an odd indent",
-        5,
-        20,
-        '\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t'
-    ];
-    for (var i=0; i<indents.length; i++) {
-        testStringsEqual(obj, indents[i]);
-    }
+    describe('#stringify(value, null, space)', () => {
+        it('does not indent when no value is provided', () => {
+            assert.strictEqual(JSON5.stringify([1]), '[1]')
+        })
 
-    if (!expectError) {
-        // no point in round tripping if there is an error
-        var origStr = JSON5.stringify(obj), roundTripStr;
-        if (origStr !== "undefined" && typeof origStr !== "undefined") {
-            try {
-                roundTripStr = JSON5.stringify(JSON5.parse(origStr));
-            } catch (e) {
-                console.log(e);
-                console.log(origStr);    
-                throw e;
-            }
-            assert.equal(origStr, roundTripStr);
-        }
-    }
-}
+        it('does not indent when 0 is provided', () => {
+            assert.strictEqual(JSON5.stringify([1], null, 0), '[1]')
+        })
 
-function assertStringifyWithCircularyHandling(obj, expected, cb) {
-    // circular objects are not recoverable, so we don't test via
-    // roundtripping, but instead feed the test rig an expected output
-    // instead -- one which is NOT circular, hence will produce
-    // a sensible object when deserialized!
-    var replacer = function repl(key, obj) {
-        if (obj instanceof Error) {
-            return {
-                message: obj.message,
-                name: '' + obj.name
-            };
-        }
-        return obj;
-    };
-    var origStr = JSON5.stringify(obj, replacer, 2, cb);
-    var expectedStr = expected;
-    if (typeof expectedStr !== "string") {
-        try {
-            expectedStr = JSON5.stringify(expected, replacer, 2);
-        } catch (e) {
-            console.log(e);
-            console.log(origStr);    
-            console.log(expected);    
-            throw e;
-        }
-    }
-    assert.equal(origStr, expectedStr);
-}
+        it('does not indent when an empty string is provided', () => {
+            assert.strictEqual(JSON5.stringify([1], null, ''), '[1]')
+        })
+
+        it('indents n spaces when a number is provided', () => {
+            assert.strictEqual(JSON5.stringify([1], null, 2), '[\n  1,\n]')
+        })
+
+        it('does not indent more than 10 spaces when a number is provided', () => {
+            assert.strictEqual(JSON5.stringify([1], null, 11), '[\n          1,\n]')
+        })
+
+        it('indents with the string provided', () => {
+            assert.strictEqual(JSON5.stringify([1], null, '\t'), '[\n\t1,\n]')
+        })
+
+        it('does not indent more than 10 characters of the string provided', () => {
+            assert.strictEqual(JSON5.stringify([1], null, '           '), '[\n          1,\n]')
+        })
+
+        it('indents in arrays', () => {
+            assert.strictEqual(JSON5.stringify([1], null, 2), '[\n  1,\n]')
+        })
+
+        it('indents in nested arrays', () => {
+            assert.strictEqual(JSON5.stringify([1, [2], 3], null, 2), '[\n  1,\n  [\n    2,\n  ],\n  3,\n]')
+        })
+
+        it('indents in objects', () => {
+            assert.strictEqual(JSON5.stringify({a: 1}, null, 2), '{\n  a: 1,\n}')
+        })
+
+        it('indents in nested objects', () => {
+            assert.strictEqual(JSON5.stringify({a: {b: 2}}, null, 2), '{\n  a: {\n    b: 2,\n  },\n}')
+        })
+
+        it('accepts Number objects', () => {
+            // eslint-disable-next-line no-new-wrappers
+            assert.strictEqual(JSON5.stringify([1], null, new Number(2)), '[\n  1,\n]')
+        })
+
+        it('accepts String objects', () => {
+            // eslint-disable-next-line no-new-wrappers
+            assert.strictEqual(JSON5.stringify([1], null, new String('\t')), '[\n\t1,\n]')
+        })
+    })
+
+    describe('#stringify(value, replacer)', () => {
+        it('filters keys when an array is provided', () => {
+            assert.strictEqual(JSON5.stringify({a: 1, b: 2, 3: 3}, ['a', 3]), "{a:1,'3':3}")
+        })
+
+        it('only filters string and number keys when an array is provided', () => {
+            assert.strictEqual(JSON5.stringify({a: 1, b: 2, 3: 3, false: 4}, ['a', 3, false]), "{a:1,'3':3}")
+        })
+
+        it('accepts String and Number objects when an array is provided', () => {
+            // eslint-disable-next-line no-new-wrappers
+            assert.strictEqual(JSON5.stringify({a: 1, b: 2, 3: 3}, [new String('a'), new Number(3)]), "{a:1,'3':3}")
+        })
+
+        it('replaces values when a function is provided', () => {
+            assert.strictEqual(
+                JSON5.stringify({a: 1, b: 2}, (key, value) => (key === 'a') ? 2 : value),
+                '{a:2,b:2}'
+            )
+        })
+
+        it('sets `this` to the parent value', () => {
+            assert.strictEqual(
+                JSON5.stringify({a: {b: 1}}, function (k, v) { return (k === 'b' && this.b) ? 2 : v }),
+                '{a:{b:2}}'
+            )
+        })
+
+        it('is called after toJSON', () => {
+            function C () {}
+            Object.assign(C.prototype, {toJSON () { return {a: 1, b: 2} }})
+            assert.strictEqual(
+                JSON5.stringify(new C(), (key, value) => (key === 'a') ? 2 : value),
+                '{a:2,b:2}'
+            )
+        })
+
+        it('is called after toJSON5', () => {
+            function C () {}
+            Object.assign(C.prototype, {toJSON5 () { return {a: 1, b: 2} }})
+            assert.strictEqual(
+                JSON5.stringify(new C(), (key, value) => (key === 'a') ? 2 : value),
+                '{a:2,b:2}'
+            )
+        })
+
+        it('does not affect space when calls are nested', () => {
+            assert.strictEqual(
+                JSON5.stringify({a: 1}, (key, value) => {
+                    JSON5.stringify({}, null, 4)
+                    return value
+                }, 2),
+                '{\n  a: 1,\n}'
+            )
+        })
+    })
+
+    describe('#stringify(value, options)', () => {
+        it('accepts replacer as an option', () => {
+            assert.strictEqual(JSON5.stringify({a: 1, b: 2, 3: 3}, {replacer: ['a', 3]}), "{a:1,'3':3}")
+        })
+
+        it('accepts space as an option', () => {
+            assert.strictEqual(JSON5.stringify([1], {space: 2}), '[\n  1,\n]')
+        })
+    })
+
+    describe('#stringify(value, {quote})', () => {
+        it('uses double quotes if provided', () => {
+            assert.strictEqual(JSON5.stringify({'a"': '1"'}, {quote: '"'}), '{"a\\"":"1\\""}')
+        })
+
+        it('uses single quotes if provided', () => {
+            assert.strictEqual(JSON5.stringify({"a'": "1'"}, {quote: "'"}), "{'a\\'':'1\\''}")
+        })
+    })
+})

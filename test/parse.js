@@ -1,159 +1,314 @@
-// parse.js
-// Tests parse(). See readme.txt for details.
+const assert = require('assert')
+const sinon = require('sinon')
+const JSON5 = require('../lib')
 
-"use strict";
+require('tap').mochaGlobals()
 
-var assert = require('assert');
-var FS = require('fs');
-var JSON5 = require('..');
-var Path = require('path');
+const t = require('tap')
 
-// Test JSON5.parse() by comparing its output for each case with either the
-// native JSON.parse() or ES5 strict-mode eval(). See readme.txt for details.
-// For eval(), remember to wrap the input in parentheses before eval()'ing,
-// since {...} is ambiguous in JavaScript. Also ensure the parentheses are on
-// lines of their own, to support inline comments.
+t.test('parse(text)', t => {
+    t.test('objects', t => {
+        t.strictSame(
+            JSON5.parse('{}'),
+            {},
+            'parses empty objects'
+        )
 
-// TODO More test cases, and ones that test specific features and edge cases.
-// Mozilla's test cases are a great inspiration and reference here:
-// http://mxr.mozilla.org/mozilla-central/source/js/src/tests/ecma_5/JSON/
+        t.strictSame(
+            JSON5.parse('{"a":1}'),
+            {a: 1},
+            'parses double string property names'
+        )
 
-var dirsPath = Path.resolve(__dirname, 'parse-cases');
-var dirs = FS.readdirSync(dirsPath).filter(function(fn) {
-  if (fn.substr(0, 1) == '.') {
-    return false;
-  }
-  return FS.statSync(Path.join(dirsPath, fn)).isDirectory();
-});
+        t.strictSame(
+            JSON5.parse("{'a':1}"),
+            {a: 1},
+            'parses single string property names'
+        )
 
-var readErrorSpec = function (filePath) {
-    var specName = Path.basename(filePath, '.txt') + '.errorSpec';
-    var specPath = Path.join(Path.dirname(filePath), specName);
-    var specTxt;
-    try {
-        specTxt = FS.readFileSync(specPath); // note that existsSync has been deprecated
-    } catch (e) {}
-    if (specTxt) {
-        try {
-            return JSON5.parse(specTxt);
-        } catch (err) {
-            err.message = 'Error reading error specification file ' + specName + ': ' + err.message;
-            throw err;
-        }
-    }
-};
+        t.strictSame(
+            JSON5.parse('{a:1}'),
+            {a: 1},
+            'parses unquoted property names'
+        )
 
-var testParseJSON5 = function (filePath, str) {
-    var errorSpec = readErrorSpec(filePath);
-    var err;
-    try {
-        JSON5.parse(str);
-    } catch (e) {
-        err = e;
-    }
-    assert(err, 'Expected JSON5 parsing to fail.');
-    if (errorSpec) {
-        describe('Error fixture ' + filePath.replace(/^.*parse-cases/, '...'), function () {
-            Object.keys(errorSpec).forEach(function (key) {
-                if (key === 'message') {
-                    it('Expected error message\n' + err.message + '\nto start with ' + errorSpec.message, function () {
-                        assert(err.message.indexOf(errorSpec.message) === 0);
-                    });
-                } else {
-                    it('Expected parse error field "' + key + '" to hold value "' + errorSpec[key] + '"', function () {
-                        assert.equal(err[key], errorSpec[key], "fixture info should match up");
-                    });
-                }
-            })
-        });
-    }
-};
+        t.strictSame(
+            JSON5.parse('{$_:1,_$:2,a\u200C:3}'),
+            {$_: 1, _$: 2, 'a\u200C': 3},
+            'parses special character property names'
+        )
 
-function createTest(fileName, dir) {
-    var ext = Path.extname(fileName);
-    var filePath = Path.join(dirsPath, dir, fileName);
-    var str = FS.readFileSync(filePath, 'utf8');
-    var refFilePath = Path.join(dirsPath, dir, fileName + '-ref');
-    var refStr = str;
-    if (FS.existsSync(refFilePath)) {
-        refStr = FS.readFileSync(refFilePath, 'utf8');
-    }
+        t.strictSame(
+            JSON5.parse('{ùńîċõďë:9}'),
+            {'ùńîċõďë': 9},
+            'parses unicode property names'
+        )
 
-    function parseJSON5(str) {
-        return JSON5.parse(str);
-    }
+        t.strictSame(
+            JSON5.parse('{\\u0061\\u0062:1,\\u0024\\u005F:2,\\u005F\\u0024:3}'),
+            {ab: 1, $_: 2, _$: 3},
+            'parses escaped property names'
+        )
 
-    function parseJSON(str) {
-        return JSON.parse(str);
-    }
+        t.strictSame(
+            JSON5.parse('{abc:1,def:2}'),
+            {abc: 1, def: 2},
+            'parses multiple properties'
+        )
 
-    function parseES5(str) {
-        var rv = eval('"use strict"; (\n' + str + '\n)');
-        // Check if the eval'd value is a ES2017 template string per chance:
-        // in that case, we must cast it to a regular string before handing 
-        // if off to the caller.
-        if (rv && rv.raw) {
-            rv = '' + rv;
-        }
-        return rv;
-    }
+        t.strictSame(
+            JSON5.parse('{a:{b:2}}'),
+            {a: {b: 2}},
+            'parses nested objects'
+        )
 
-    exports[dir][fileName] = function test() {
-        switch (ext) {
-            case '.json':
-                assert.deepEqual(parseJSON5(str), parseJSON(refStr),
-                    'Expected parsed JSON5 to equal parsed JSON.');
-                break;
-            case '.json5':
-                assert.throws(function () {
-                    return parseJSON(str);        // test validation
-                }, 'Test case bug: expected JSON parsing to fail.');
-                // Need special case for NaN as NaN != NaN
-                if ( fileName === 'nan.json5' ) {
-                    assert.equal( isNaN( parseJSON5(str) ), isNaN( parseES5(refStr) ),
-                        'Expected parsed JSON5 to equal parsed ES5.');
-                }
-                else {
-                    assert.deepEqual( parseJSON5(str), parseES5(refStr),
-                        'Expected parsed JSON5 to equal parsed ES5.');
-                }
-                break;
-            case '.heredoc5':
-                assert.deepEqual(parseJSON5(str), parseJSON(refStr),
-                    'Expected parsed JSON5 HEREDOC to equal parsed reference JSON.');
-                break;
-            case '.js':
-                assert.throws(function () {
-                    return parseJSON(str);        // test validation
-                }, 'Test case bug: expected JSON parsing to fail.');
-                assert.doesNotThrow(function () {
-                    return parseES5(str);      // test validation
-                }, 'Test case bug: expected ES5 parsing not to fail.');
-                assert.throws(function () {
-                    return parseJSON5(str);
-                }, 'Expected JSON5 parsing to fail.');
-                break;
-            case '.txt':
-                assert.throws(function () {
-                    return parseES5(str);         // test validation
-                }, 'Test case bug: expected ES5 parsing to fail.');
-                testParseJSON5(filePath, str);
-                break;
-        }
-    };
-}
+        t.end()
+    })
 
-dirs.forEach(function (dir) {
-    // create a test suite for this group of tests:
-    exports[dir] = {};
+    t.test('arrays', t => {
+        t.strictSame(
+            JSON5.parse('[]'),
+            [],
+            'parses empty arrays'
+        )
 
-    // skip the TODO directory -- these tests are expected to fail:
-    if (dir === 'todo') {
-        return;
-    }
+        t.strictSame(
+            JSON5.parse('[1]'),
+            [1],
+            'parses array values'
+        )
 
-    // otherwise create a test for each file in this group:
-    FS.readdirSync(Path.join(dirsPath, dir)).forEach(function (file) {
-        createTest(file, dir);
-    });
-});
+        t.strictSame(
+            JSON5.parse('[1,2]'),
+            [1, 2],
+            'parses multiple array values'
+        )
+
+        t.strictSame(
+            JSON5.parse('[1,[2,3]]'),
+            [1, [2, 3]],
+            'parses nested arrays'
+        )
+
+        t.end()
+    })
+
+    t.test('nulls', t => {
+        t.equal(
+            JSON5.parse('null'),
+            null,
+            'parses nulls'
+        )
+
+        t.end()
+    })
+
+    t.test('Booleans', t => {
+        t.equal(
+            JSON5.parse('true'),
+            true,
+            'parses true'
+        )
+
+        t.equal(
+            JSON5.parse('false'),
+            false,
+            'parses false'
+        )
+
+        t.end()
+    })
+
+    t.test('numbers', t => {
+        t.strictSame(
+            JSON5.parse('[0,0.,0e0]'),
+            [0, 0, 0],
+            'parses leading zeroes'
+        )
+
+        t.strictSame(
+            JSON5.parse('[1,23,456,7890]'),
+            [1, 23, 456, 7890],
+            'parses integers'
+        )
+
+        t.strictSame(
+            JSON5.parse('[-1,+2,-.1,-0]'),
+            [-1, +2, -0.1, -0],
+            'parses signed numbers'
+        )
+
+        t.strictSame(
+            JSON5.parse('[.1,.23]'),
+            [0.1, 0.23],
+            'parses leading decimal points'
+        )
+
+        t.strictSame(
+            JSON5.parse('[1.0,1.23]'),
+            [1, 1.23],
+            'parses fractional numbers'
+        )
+
+        t.strictSame(
+            JSON5.parse('[1e0,1e1,1e01,1.e0,1.1e0,1e-1,1e+1]'),
+            [1, 10, 10, 1, 1.1, 0.1, 10],
+            'parses exponents'
+        )
+
+        t.strictSame(
+            JSON5.parse('[0x1,0x10,0xff,0xFF]'),
+            [1, 16, 255, 255],
+            'parses hexadecimal numbers'
+        )
+
+        t.strictSame(
+            JSON5.parse('[Infinity,-Infinity]'),
+            [Infinity, -Infinity],
+            'parses signed and unsigned Infinity'
+        )
+
+        t.ok(
+            isNaN(JSON5.parse('NaN')),
+            'parses NaN'
+        )
+
+        t.ok(
+            isNaN(JSON5.parse('-NaN')),
+            'parses signed NaN'
+        )
+
+        t.end()
+    })
+
+    t.test('strings', t => {
+        t.equal(
+            JSON5.parse('"abc"'),
+            'abc',
+            'parses double quoted strings'
+        )
+
+        t.equal(
+            JSON5.parse("'abc'"),
+            'abc',
+            'parses single quoted strings'
+        )
+
+        t.strictSame(
+            JSON5.parse(`['"',"'"]`),
+            ['"', "'"],
+            'parses quotes in strings')
+
+        t.equal(
+            JSON5.parse(`'\\b\\f\\n\\r\\t\\v\\0\\x0f\\u01fF\\\n\\\r\n\\\r\\\u2028\\\u2029\\a\\'\\"'`),
+            `\b\f\n\r\t\v\0\x0f\u01FF\a'"`, // eslint-disable-line no-useless-escape
+            'parses escpaed characters'
+        )
+
+        t.test('parses line and paragraph separators with a warning', t => {
+            const mock = sinon.mock(console)
+            mock
+                .expects('warn')
+                .twice()
+                .calledWithMatch('not valid ECMAScript')
+
+            assert.deepStrictEqual(
+                JSON5.parse("'\u2028\u2029'"),
+                '\u2028\u2029'
+            )
+
+            mock.verify()
+            mock.restore()
+
+            t.end()
+        })
+
+        t.end()
+    })
+
+    t.test('comments', t => {
+        t.strictSame(
+            JSON5.parse('{//comment\n}'),
+            {},
+            'parses single-line comments'
+        )
+
+        t.strictSame(
+            JSON5.parse('{}//comment'),
+            {},
+            'parses single-line comments at end of input'
+        )
+
+        t.strictSame(
+            JSON5.parse('{/*comment\n** */}'),
+            {},
+            'parses multi-line comments'
+        )
+
+        t.end()
+    })
+
+    t.test('whitespace', t => {
+        t.strictSame(
+            JSON5.parse('{\t\v\f \u00A0\uFEFF\n\r\u2028\u2029\u2003}'),
+            {},
+            'parses whitespace'
+        )
+
+        t.end()
+    })
+
+    t.end()
+})
+
+t.test('parse(text, reviver)', t => {
+    t.strictSame(
+        JSON5.parse('{a:1,b:2}', (k, v) => (k === 'a') ? 'revived' : v),
+        {a: 'revived', b: 2},
+        'modifies property values'
+    )
+
+    t.strictSame(
+        JSON5.parse('{a:{b:2}}', (k, v) => (k === 'b') ? 'revived' : v),
+        {a: {b: 'revived'}},
+        'modifies nested object property values'
+    )
+
+    t.strictSame(
+        JSON5.parse('{a:1,b:2}', (k, v) => (k === 'a') ? undefined : v),
+        {b: 2},
+        'deletes property values'
+    )
+
+    t.strictSame(
+        JSON5.parse('[0,1,2]', (k, v) => (k === '1') ? 'revived' : v),
+        [0, 'revived', 2],
+        'modifies array values'
+    )
+
+    t.strictSame(
+        JSON5.parse('[0,[1,2,3]]', (k, v) => (k === '2') ? 'revived' : v),
+        [0, [1, 2, 'revived']],
+        'modifies nested array values'
+    )
+
+    t.strictSame(
+        JSON5.parse('[0,1,2]', (k, v) => (k === '1') ? undefined : v),
+        [0, , 2], // eslint-disable-line no-sparse-arrays
+        'deletes array values'
+    )
+
+    t.equal(
+        JSON5.parse('1', (k, v) => (k === '') ? 'revived' : v),
+        'revived',
+        'modifies the root value'
+    )
+
+    t.strictSame(
+        JSON5.parse('{a:{b:2}}', function (k, v) { return (k === 'b' && this.b) ? 'revived' : v }),
+        {a: {b: 'revived'}},
+        'sets `this` to the parent value'
+    )
+
+    t.end()
+})
