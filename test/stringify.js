@@ -129,6 +129,121 @@ exports.stringify.circular = function test() {
     assertStringify(obj3, null, true);
 };
 
+// we expect errors from all of these tests.  
+// The errors should be caught by JSON5.stringify 
+// and produce valid output via the 4th arg: callback.
+exports.stringify.circular_with_recovery_callback = function test() {
+    var altobj = { cycle: '[circular!]' };
+
+    var obj1 = { };
+    obj1.obj = obj1;
+
+    var refobj1 = { 
+        obj: {
+            alt: altobj,
+            index: 0,
+            key: 'obj',
+            err: {
+                message: "Converting circular structure to JSON",
+                name: "TypeError",
+            }
+        } 
+    };
+    assertStringifyWithCircularyHandling(obj1, refobj1, function chk1(obj, i, cache, holder, key, err) {
+        assert.strictEqual(holder[key], cache[i]);
+        return {
+            alt: altobj,
+            index: i,
+            key: key,
+            err: err
+        };
+    });
+
+    var obj2 = {inner1: {inner2: {}}};
+    obj2.inner1.inner2.obj = obj2;
+
+    var refobj2 = { 
+        inner1: {
+            inner2: {
+                obj: {
+                    alt: altobj,
+                    index: 0,
+                    key: 'obj',
+                    err: {
+                        message: "Converting circular structure to JSON",
+                        name: "TypeError",
+                    }
+                } 
+            }
+        }
+    };
+    assertStringifyWithCircularyHandling(obj2, refobj2, function chk2(obj, i, cache, holder, key, err) {
+        assert.strictEqual(holder[key], cache[i]);
+        return {
+            alt: altobj,
+            index: i,
+            key: key,
+            err: err
+        };
+    });
+
+    var obj3 = {inner1: {inner2: []}};
+    obj3.inner1.inner2[0] = obj3;
+
+    var refobj3 = { 
+        inner1: {
+            inner2: [
+                {
+                    alt: altobj,
+                    index: 0,
+                    key: 0,
+                    err: {
+                        message: "Converting circular structure to JSON",
+                        name: "TypeError",
+                    }
+                } 
+            ]
+        }
+    };
+    assertStringifyWithCircularyHandling(obj3, refobj3, function chk2(obj, i, cache, holder, key, err) {
+        assert.strictEqual(holder[key], cache[i]);
+        return {
+            alt: altobj,
+            index: i,
+            key: key,
+            err: err
+        };
+    });
+
+    var obj4 = {inner1: {inner2: []}};
+    obj4.inner1.inner2[0] = obj4.inner1;
+
+    var refobj4 = { 
+        inner1: {
+            inner2: [
+                {
+                    alt: altobj,
+                    index: 1,
+                    key: 0,
+                    err: {
+                        message: "Converting circular structure to JSON",
+                        name: "TypeError",
+                    }
+                } 
+            ]
+        }
+    };
+    assertStringifyWithCircularyHandling(obj4, refobj4, function chk2(obj, i, cache, holder, key, err) {
+        assert.strictEqual(holder[key], cache[i]);
+        return {
+            alt: altobj,
+            index: i,
+            key: key,
+            err: err
+        };
+    });
+};
+
 exports.stringify.replacerType = function test() {
     var assertStringifyJSON5ThrowsExceptionForReplacer = function(replacer) {
         assert.throws(
@@ -520,4 +635,33 @@ function assertStringify(obj, replacerTestConstructor, expectError) {
             assert.equal(origStr, roundTripStr);
         }
     }
+}
+
+function assertStringifyWithCircularyHandling(obj, expected, cb) {
+    // circular objects are not recoverable, so we don't test via
+    // roundtripping, but instead feed the test rig an expected output
+    // instead -- one which is NOT circular, hence will produce
+    // a sensible object when deserialized!
+    var replacer = function repl(key, obj) {
+        if (obj instanceof Error) {
+            return {
+                message: obj.message,
+                name: '' + obj.name
+            };
+        }
+        return obj;
+    };
+    var origStr = JSON5.stringify(obj, replacer, 2, cb);
+    var expectedStr = expected;
+    if (typeof expectedStr !== "string") {
+        try {
+            expectedStr = JSON5.stringify(expected, replacer, 2);
+        } catch (e) {
+            console.log(e);
+            console.log(origStr);    
+            console.log(expected);    
+            throw e;
+        }
+    }
+    assert.equal(origStr, expectedStr);
 }
