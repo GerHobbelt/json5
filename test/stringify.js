@@ -1,5 +1,7 @@
-import assert from 'assert'
-import JSON5 from '../lib'
+const assert = require('assert')
+const JSON5 = require('../lib')
+
+require('tap').mochaGlobals()
 
 describe('JSON5', () => {
     describe('#stringify', () => {
