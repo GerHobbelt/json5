@@ -13,6 +13,6 @@ module.exports = {
     plugins: [
         resolve(),
         commonjs(),
-        uglify(),
+        // uglify(), -- do NOT compress the library in /dist/
     ],
 }
