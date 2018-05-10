@@ -213,6 +213,18 @@ t.test('parse(text)', t => {
         )
 
         t.equal(
+            JSON5.parse("`abc\rdef\r`"),
+            'abc\ndef\n',
+            'parses ES6-style backtick quoted strings with CR newlines'
+        )
+
+        t.equal(
+            JSON5.parse("`\r\n\r\nabc\r\n\r\n\r\n\r\ndef\r\n`"),
+            '\n\nabc\n\n\n\ndef\n',
+            'parses ES6-style backtick quoted strings with many CRLF newlines'
+        )
+
+        t.equal(
             JSON5.parse("<EOT\nabc\nEOT\n"),
             'abc',
             'parses heredoc strings'
@@ -264,6 +276,12 @@ t.test('parse(text)', t => {
             JSON5.parse("<<<EOT\r\nabc\r\nEOX,\r\nx\r\nEOT\r\n"),
             'abc\r\nEOX,\r\nx',
             'parses heredoc strings in CRLF input'
+        )
+
+        t.equal(
+            JSON5.parse("<<<EOT\rabc\rEOX,\rx\rEOT\r"),
+            'abc\rEOX,\rx',
+            'parses heredoc strings in CR-only input'
         )
 
         t.strictSame(
