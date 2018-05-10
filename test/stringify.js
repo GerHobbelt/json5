@@ -126,7 +126,11 @@ describe('JSON5', () => {
             })
 
             it('stringifies escaped characters', () => {
-                assert.strictEqual(JSON5.stringify('\\\b\f\n\r\t\v\0\x0f'), "'\\\\\\b\\f\\n\\r\\t\\v\\0\\x0f'")
+                assert.strictEqual(JSON5.stringify('\\\b\f\r\t\v\0\x0f'), "'\\\\\\b\\f\\r\\t\\v\\0\\x0f'")
+            })
+
+            it('stringifies escaped characters to ES6-style', () => {
+                assert.strictEqual(JSON5.stringify('\\\b\f\n\r\t\v\0\x0f\n'), '`\\\\\\b\\f\n\r\t\\v\\u0000\\u000f\n`')
             })
 
             it('stringifies escaped single quotes', () => {
@@ -134,7 +138,7 @@ describe('JSON5', () => {
             })
 
             it('stringifies escaped double quotes', () => {
-                assert.strictEqual(JSON5.stringify(`''"`), `"''\\""`)
+                assert.strictEqual(JSON5.stringify(`''"`), `\`\'\'"\``)
             })
 
             it('stringifies escaped line and paragraph separators', () => {
@@ -145,6 +149,11 @@ describe('JSON5', () => {
                 // eslint-disable-next-line no-new-wrappers
                 assert.strictEqual(JSON5.stringify(new String('abc')), "'abc'")
             })
+
+            it('stringifies multiline string values to ES6-style', () => {
+                assert.strictEqual(JSON5.stringify('Sid\nVicious\nand\nThe\nStampeding\nHordes\nOf\nDoom'), '`Sid\nVicious\nand\nThe\nStampeding\nHordes\nOf\nDoom`')
+            })
+
         })
 
         it('stringifies using built-in toJSON methods', () => {
@@ -194,6 +203,18 @@ describe('JSON5', () => {
             let a = []
             a[0] = a
             assert.throws(() => { JSON5.stringify(a) }, TypeError, 'Converting circular structure to JSON5')
+        })
+
+        it('invokes 4th arg callback on circular objects', () => {
+            let a = {}
+            a.a = a
+            assert.strictEqual(JSON5.stringify(a,null,null,(value, circusPos, stack, key, err) => ['[circular]', key, circusPos]), '{a:[\'[circular]\',\'a\',0]}')
+        })
+
+        it('throws on circular arrays', () => {
+            let a = []
+            a[0] = a
+            assert.strictEqual(JSON5.stringify(a,null,null,(value, circusPos, stack, key, err) => ['[circular]', key, circusPos]), '[[\'[circular]\',\'0\',0]]')
         })
     })
 
