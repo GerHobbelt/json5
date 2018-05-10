@@ -1,6 +1,6 @@
 const resolve = require('rollup-plugin-node-resolve')
 const commonjs = require('rollup-plugin-commonjs')
-const uglify = require('rollup-plugin-uglify')
+// const uglify = require('rollup-plugin-uglify')
 const pkg = require('./package.json')
 
 module.exports = {
