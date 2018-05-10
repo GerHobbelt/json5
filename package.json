@@ -1,6 +1,6 @@
 {
   "name": "@gerhobbelt/json5",
-  "version": "1.0.1-25",
+  "version": "1.0.1-26",
   "description": "JSON for humans.",
   "main": "dist/index.js",
   "bin": "lib/cli.js",
@@ -19,7 +19,7 @@
     "coverage": "tap --coverage-report html test",
     "lint": "eslint --fix .",
     "prepublishOnly": "npm run production",
-    "preversion": "npm run production",
+    "preversion-orig": "npm run production",
     "production": "npm run lint && npm test && npm run build",
     "test": "tap -Rspec --100 test",
     "version": "npm run build-package && git add package.json5",
