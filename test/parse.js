@@ -194,15 +194,99 @@ t.test('parse(text)', t => {
             'parses single quoted strings'
         )
 
+        t.equal(
+            JSON5.parse("`abc`"),
+            'abc',
+            'parses ES6-style backtick quoted strings'
+        )
+
+        t.equal(
+            JSON5.parse("`abc\ndef\n`"),
+            'abc\ndef\n',
+            'parses ES6-style backtick quoted strings with newlines'
+        )
+
+        t.equal(
+            JSON5.parse("`abc\r\ndef\r\n`"),
+            'abc\ndef\n',
+            'parses ES6-style backtick quoted strings with CRLF newlines'
+        )
+
+        t.equal(
+            JSON5.parse("<EOT\nabc\nEOT\n"),
+            'abc',
+            'parses heredoc strings'
+        )
+
+        t.equal(
+            JSON5.parse("<<<EOT\nabc\nEOT\n"),
+            'abc',
+            'parses heredoc strings with longer leader'
+        )
+
+        t.equal(
+            JSON5.parse("<X\nabc\nX\n"),
+            'abc',
+            'parses heredoc strings with 1-char marker'
+        )
+
+        t.equal(
+            JSON5.parse("<EOT\nabc\nEOT"),
+            'abc',
+            'parses heredoc strings near EOF'
+        )
+
+        t.equal(
+            JSON5.parse("<<<EOT\nabc\n EOT\nx\nEOT"),
+            'abc\n EOT\nx',
+            'parses heredoc strings which contain their marker as content (v1)'
+        )
+
+        t.equal(
+            JSON5.parse("<<<EOT\nabc\nEOT \nx\nEOT"),
+            'abc\nEOT \nx',
+            'parses heredoc strings which contain their marker as content (v2)'
+        )
+
+        t.equal(
+            JSON5.parse("<<<EOT\nabc\nEOT,\nx\nEOT"),
+            'abc\nEOT,\nx',
+            'parses heredoc strings which contain their marker as content (v3)'
+        )
+
+        t.equal(
+            JSON5.parse("<<<EOT\nabc\nEOX,\nx\nEOT"),
+            'abc\nEOX,\nx',
+            'parses heredoc strings which contain their marker start as content'
+        )
+
+        t.equal(
+            JSON5.parse("<<<EOT\r\nabc\r\nEOX,\r\nx\r\nEOT\r\n"),
+            'abc\r\nEOX,\r\nx',
+            'parses heredoc strings in CRLF input'
+        )
+
+        t.strictSame(
+            JSON5.parse("{a: <EOT\nabc\nEOT\n,b:1}"),
+            {a: 'abc', b: 1},
+            'parses heredoc strings as part of a larger structure'
+        )
+
         t.strictSame(
             JSON5.parse(`['"',"'"]`),
             ['"', "'"],
             'parses quotes in strings')
 
         t.equal(
-            JSON5.parse(`'\\b\\f\\n\\r\\t\\v\\0\\x0f\\u01fF\\\n\\\r\n\\\r\\\u2028\\\u2029\\a\\'\\"'`),
-            `\b\f\n\r\t\v\0\x0f\u01FF\a'"`, // eslint-disable-line no-useless-escape
-            'parses escpaed characters'
+            JSON5.parse(`'\\b\\f\\n\\r\\t\\v\\0\\x0f\\u01fF\\\n\\\r\n\\\r\\\u2028\\\u2029\\a\\'\\"\u2028\u2029'`),
+            `\b\f\n\r\t\v\0\x0f\u01FF\a'"\u2028\u2029`, // eslint-disable-line no-useless-escape
+            'parses escaped characters'
+        )
+
+        t.equal(
+            JSON5.parse(`\`\\b\\f\\n\\r\\t\\v\\0\\x0f\\u01fF\\\n\\\r\n\\\r\\\u2028\\\u2029\\a\\'\\"'""'\u2028\u2029\``),
+            `\b\f\n\r\t\v\0\x0f\u01FF\a'"'""'\u2028\u2029`, // eslint-disable-line no-useless-escape
+            'parses escaped characters in ES6 string'
         )
 
         t.test('parses line and paragraph separators with a warning', t => {

@@ -109,6 +109,7 @@
     let doubleQuote;
     let sign;
     let c;
+    let heredocMarker;
 
     function lex () {
         lexState = 'default';
@@ -330,6 +331,16 @@
                 doubleQuote = (read() === '"');
                 buffer = '';
                 lexState = 'string';
+                return
+
+            case '`':
+                buffer = '';
+                lexState = 'template';
+                return
+
+            case '<':
+                buffer = '';
+                lexState = 'heredoc';
                 return
             }
 
@@ -633,6 +644,184 @@
             }
 
             buffer += read();
+        },
+
+        template () {
+            switch (c) {
+            case '\\':
+                read();
+                // since octal literals are not supported,
+                // octal escapes in strings are not either.
+                //
+                // While https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals
+                // says otherwise, we still DO NOT support octal escapes in JSON5 '`'-delimited multiline
+                // strings, as these ARE NOT identical to JavaScript 'template strings' as we DO NOT
+                // intend to support the `${...}` template variable expansion feature either!
+                buffer += escape();
+                return
+
+            case '`':
+                read();
+                return newToken('string', buffer)
+
+            case '\n':
+            case '\r':
+                // CR and CRLF get transformed to LF when the string being parsed is a `string template` type.
+                if (c === '\r') {
+                    read();
+                    c = peek();
+                }
+                if (c === '\n') {
+                    read();
+                    c = peek();
+                }
+                buffer += '\n';
+                return
+
+            case '\u2028':
+            case '\u2029':
+                separatorChar(c);
+                break
+
+            case undefined:
+                throw invalidChar(read())
+            }
+
+            buffer += read();
+        },
+
+        // Parse a heredoc (string) value: start with extracting the EOT marker.
+        heredoc () {
+            // When parsing for heredoc values, we must extract the EOT marker before anything else.
+            // Once we've done that, we skip the first newline and start scanning/consuming heredoc
+            // content until we hit the EOT marker on a line by itself, sans whitespace.
+            //
+            // By convention we do not accept 'formatting whitespace/indentation' before the EOT
+            // marker on the same line.
+            // 
+            // we accept 2 or more(!) `<` characters to mark the start of a heredoc chunk:
+            while (c === '<') {
+                read();
+                c = peek();
+            }
+            lexState = 'heredocStartMarker';
+            heredocMarker = '';
+        },
+
+        heredocStartMarker () {
+            // we accept any non-whitespace character sequence as heredoc EOT marker:
+            while (/[^\s\r\n<>,"'\/\[\]\{\}]/.test(c)) {
+                heredocMarker += read();
+                c = peek();
+            }
+            if (!heredocMarker) {
+                throw syntaxError(`JSON5: Expected heredoc starting EOT marker to immediately follow the initial << or <<< at ${line}:${column}`)
+            }
+
+            // the *content* of the heredoc starts after the first CR/LF;
+            // we DO NOT tolerate trailing whitespace or any other cruft here!
+            let eol_seen = false;
+            if (c === '\r') {
+                read();
+                eol_seen = true;
+                c = peek();
+            }
+            if (c === '\n') {
+                read();
+                eol_seen = true;
+                c = peek();
+            }
+            if (!eol_seen) {
+                throw syntaxError(`JSON5: Expected heredoc starting EOT marker to be terminated by a CR/LF or LF linefeed at ${line}:${column}`)
+            }
+
+            lexState = 'heredocContent';
+        },
+
+        heredocContent () {
+            // scan for a lone heredoc EOT marker; until we find one, everything is literal string content.
+            // heredoc content doesn't process escape sequences: everything is passed on as-is!
+            //
+            // The content ENDS before the last CR/LF before the lone EOT marker; the EOT marker must exist
+            // on a line by itself, without any preceeding or trailing whitespace.
+            // If the JSON5 field is followed by more data, the separator (comma, bracket, ...) must exist
+            // on the line *past* the EOT marker line: the EOT must be clearly 'alone' in there.
+            let start = pos;
+            let end = pos;
+            let eot_ch0 = heredocMarker[0];
+            for (;;) {
+                let idx = source.indexOf(eot_ch0, pos);
+                if (idx < 0) {
+                    throw syntaxError(`JSON5: the heredoc string MUST be terminated by the sentinel "${heredocMarker}" on a separate line. Heredoc exists at ${line}:${column}`)
+                }
+                // we don't tolerate any whitespace leading the EOT marker: 
+                // it must be at the start of a new line!
+                pos = idx - 1;
+                let eol = peek();
+                if (eol !== '\n' && eol !== '\r') {
+                    // not a SOL, hence not a valid position: ignore and continue!
+                    pos = idx + 1;
+                    continue;
+                }
+                // otherwise we MAY have a hit: check the entire EOT and make sure it's terminated by another CR/LF:
+                end = pos;
+                pos = idx + 1;
+
+                // by the way: when we see a LF before the EOT, it MAY be preceeded by a CR:
+                if (eol === '\n') {
+                    pos = idx - 2;
+                    eol = peek();
+                    if (eol === '\r') {
+                        end = pos;
+                    }
+                }
+
+                // now check to make sure we match the *entire* EOT marker at this location:
+                for (let i = 1, len = heredocMarker.length; i < len; i++) {
+                    if (heredocMarker[i] !== source[pos + i]) {
+                        // only partial match: ignore & continue
+                        pos += i;
+                        break;
+                    }
+                }
+                if (i === len) {
+                    // we matched a full EOT sentinel. Now is it terminated by CR/LF?
+                    pos = idx + len;
+                    c = peek();
+            
+                    let eol_seen = false;
+                    if (c === '\r') {
+                        pos++;
+                        eol_seen = true;
+                        c = peek();
+                    }
+                    if (c === '\n') {
+                        pos++;
+                        eol_seen = true;
+                        c = peek();
+                    }
+                    if (!eol_seen) {
+                        // no 'lone EOT marker' hence we ignore & continue
+                        continue;
+                    }
+                    // else: we've got a winner! heredoc goes from `start` to `end`.
+                    buffer = source.substring(start, end);
+                    
+                    // replicate the peek()+read() location tracking functionality here
+                    // for performance reasons:
+                    let lines = buffer.split('\n');
+                    line += lines.length + 1; /* line carrying the EOT marker */
+                    // since a heredoc spans entire lines and the sentinel itself is terminated by another newline,
+                    // we can safely reset the column value:
+                    column = 0;
+     
+                    return newToken('string', buffer)
+                }
+                // otherwise, we didn't have a full EOT match, hence ignore & continue
+                //
+                // `pos` has already been adjusted, so no need to attend to that either.
+                continue;
+            }
         },
 
         start () {
@@ -1135,7 +1324,7 @@
         return err
     }
 
-    var stringify = function stringify (value, replacer, space) {
+    var stringify = function stringify (value, replacer, space, circularRefHandler) {
         const stack = [];
         let indent = '';
         let propertyList;
@@ -1222,7 +1411,7 @@
             }
 
             if (typeof value === 'string') {
-                return quoteString(value, false)
+                return quoteStringES6(value)
             }
 
             if (typeof value === 'number') {
@@ -1230,10 +1419,63 @@
             }
 
             if (typeof value === 'object') {
+                let circusPos = stack.indexOf(value);
+                if (circusPos >= 0) {
+                    let err = new TypeError('converting circular structure to JSON5');
+                    if (typeof circularRefHandler === 'function') {
+                        return serializeProperty('', {'': circularRefHandler(value, circusPos, stack, key, err)});
+                    } else {
+                        throw err;
+                    }
+                }
+
                 return Array.isArray(value) ? serializeArray(value) : serializeObject(value)
             }
 
             return undefined
+        }
+
+        function quoteStringES6 (value) {
+            // When a string contains multiline content, consider printing it as 
+            // an ES6 template string instead.
+            // Ditto for strings with lots of characters which require escaping.
+            const eolRe = /[\r\n]/;
+            const regularReplacementsRe = /['"\\\x00-\x1f\u2028\u2029]/;
+            // NOTE: we are intentionally inaccurate with the es6ReplacementsRe regex 
+            // here as it only serves as heauristics assistant and we do not want 
+            // to skew preference for ES6style output for strings which array a lot 
+            // of \x00-\x1f characters besides CR/LF as those strings would be formatted 
+            // to a *shorter* string in the classic JSON5 string format!
+            const es6ReplacementRe = /[\\`\x00-\x1f]/;     
+            // table of character substitutions
+            const metaES6 = { 
+                '\b': '\\b',        // \b = U+0008
+                '\f': '\\f',        // \f = U+000C
+                '\v': '\\v',        // \v = U+000B
+                '`' : '\\`',
+                '\\': '\\\\'
+            };
+
+            // apply heuristic to the decision:
+            let es6style = false;
+            let l1 = value.split(eolRe);
+                let l2 = value.split(regularReplacementsRe);
+                let l3 = value.split(es6ReplacementRe);
+
+            es6style = (l1.length >= 2);
+            if (!es6style) {
+                es6style = (l3.length < l2.length - 2);
+            }
+            console.error('string checks:', [value, l1.length, l2.length, l3.length, es6style]);
+            if (!es6style) {
+                return quoteString(value);
+            }
+            return '`' + value.replace(es6ReplacementRe, function (a) {
+                var c = metaES6[a];
+                return typeof c === 'string' ?
+                    c :
+                    '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+            }) + '`';
         }
 
         function quoteString (value) {
@@ -1290,10 +1532,6 @@
         }
 
         function serializeObject (value) {
-            if (stack.indexOf(value) >= 0) {
-                throw TypeError('Converting circular structure to JSON5')
-            }
-
             stack.push(value);
 
             let stepback = indent;
@@ -1353,10 +1591,6 @@
         }
 
         function serializeArray (value) {
-            if (stack.indexOf(value) >= 0) {
-                throw TypeError('Converting circular structure to JSON5')
-            }
-
             stack.push(value);
 
             let stepback = indent;

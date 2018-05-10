@@ -210,6 +210,66 @@ describe('JSON5', () => {
                 ))
             })
 
+            it('throws on unterminated backticked strings (v1)', () => {
+                assert.throws(() => {
+                    JSON5.parse('`xyz')
+                },
+                err => (
+                    err instanceof SyntaxError &&
+                    /^JSON5: invalid end of input/.test(err.message) &&
+                    err.lineNumber === 1 &&
+                    err.columnNumber === 5
+                ))
+            })
+
+            it('throws on unterminated backticked strings (v2)', () => {
+                assert.throws(() => {
+                    JSON5.parse('`xyz\\`')
+                },
+                err => (
+                    err instanceof SyntaxError &&
+                    /^JSON5: invalid end of input/.test(err.message) &&
+                    err.lineNumber === 1 &&
+                    err.columnNumber === 7
+                ))
+            })
+
+            it('throws on unterminated heredoc strings (v1)', () => {
+                assert.throws(() => {
+                    JSON5.parse('<EOT\nxyz\nEOX\n')
+                },
+                err => (
+                    err instanceof SyntaxError &&
+                    /^JSON5: the heredoc string MUST be terminated/.test(err.message) &&
+                    err.lineNumber === 2 &&
+                    err.columnNumber === 0
+                ))
+            })
+
+            it('throws on unterminated heredoc string start marker', () => {
+                assert.throws(() => {
+                    JSON5.parse('<EOT \nxyz\nEOX\n')
+                },
+                err => (
+                    err instanceof SyntaxError &&
+                    /^JSON5: Expected heredoc starting EOT marker to be terminated/.test(err.message) &&
+                    err.lineNumber === 1 &&
+                    err.columnNumber === 4
+                ))
+            })
+
+            it('throws on invalid heredoc string start marker', () => {
+                assert.throws(() => {
+                    JSON5.parse('< EOT\nxyz\nEOT\n')
+                },
+                err => (
+                    err instanceof SyntaxError &&
+                    /^JSON5: Expected heredoc starting EOT marker to immediately follow the initial/.test(err.message) &&
+                    err.lineNumber === 1 &&
+                    err.columnNumber === 1
+                ))
+            })
+
             it('throws on invalid identifier start characters in property names', () => {
                 assert.throws(() => {
                     JSON5.parse('{!:1}')
