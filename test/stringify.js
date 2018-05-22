@@ -192,6 +192,28 @@ describe('JSON5', () => {
             assert.strictEqual(JSON5.stringify(new C()), '{a:2,b:2}')
         })
 
+        it('does not consider multiple bother/nephew references within an object as circular references', () => {
+            let x = []
+            let y = []
+            let v = [x, y]
+            let a = {
+                v1: v,
+                a: {
+                    v2: v,
+                    b: [
+                        v,
+                        {
+                            v3: v
+                        }
+                    ]
+                },
+                v4: [
+                    v, v, v, v
+                ]
+            }
+            assert.strictEqual(JSON5.stringify(a), '{v1:[[],[]],a:{v2:[[],[]],b:[[[],[]],{v3:[[],[]]}]},v4:[[[],[]],[[],[]],[[],[]],[[],[]]]}')
+        })
+
         it('throws on circular objects', () => {
             let a = {}
             a.a = a
@@ -210,7 +232,7 @@ describe('JSON5', () => {
             assert.strictEqual(JSON5.stringify(a, null, null, (value, circusPos, stack, key, err) => ['[circular]', key, circusPos]), '{a:[\'[circular]\',\'a\',0]}')
         })
 
-        it('throws on circular arrays', () => {
+        it('invokes 4th arg callback on circular arrays', () => {
             let a = []
             a[0] = a
             assert.strictEqual(JSON5.stringify(a, null, null, (value, circusPos, stack, key, err) => ['[circular]', key, circusPos]), '[[\'[circular]\',\'0\',0]]')
