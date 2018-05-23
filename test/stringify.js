@@ -229,13 +229,52 @@ describe('JSON5', () => {
         it('invokes 4th arg callback on circular objects', () => {
             let a = {}
             a.a = a
-            assert.strictEqual(JSON5.stringify(a, null, null, (value, circusPos, stack, key, err) => ['[circular]', key, circusPos]), '{a:[\'[circular]\',\'a\',0]}')
+            assert.strictEqual(JSON5.stringify(a, null, null, (value, circusPos, stack, keyStack, key, err) => ['[circular]', {key, circusPos, /* stack, */ keyStack, err}]),
+                '{a:[\'[circular]\',{key:\'a\',circusPos:0,keyStack:[\'\'],err:{message:\'converting circular structure to JSON5\',name:\'TypeError\'}}]}')
         })
 
         it('invokes 4th arg callback on circular arrays', () => {
             let a = []
             a[0] = a
-            assert.strictEqual(JSON5.stringify(a, null, null, (value, circusPos, stack, key, err) => ['[circular]', key, circusPos]), '[[\'[circular]\',\'0\',0]]')
+            assert.strictEqual(JSON5.stringify(a, null, null, (value, circusPos, stack, keyStack, key, err) => ['[circular]', {key, circusPos, /* stack, */ keyStack, err}]),
+                '[[\'[circular]\',{key:\'0\',circusPos:0,keyStack:[\'\'],err:{message:\'converting circular structure to JSON5\',name:\'TypeError\'}}]]')
+        })
+
+        it('copes properly with circular ref introduced by invoked 4th arg callback on circular object', () => {
+            let a = {}
+            a.a = a
+            assert.strictEqual(JSON5.stringify(a, null, null, (value, circusPos, stack, keyStack, key, err) => ['[circular]', {stack}]),
+                '{a:[\'[circular]\',{stack:[\'[!circular ref inside circularRefHandler!]\']}]}')
+        })
+
+        it('copes properly with circular ref introduced by invoked 4th arg callback on circular array', () => {
+            let a = []
+            a[0] = a
+            assert.strictEqual(JSON5.stringify(a, null, null, (value, circusPos, stack, keyStack, key, err) => ['[circular]', {stack}]),
+                '[[\'[circular]\',{stack:[\'[!circular ref inside circularRefHandler!]\']}]]')
+        })
+
+        it('dumps a sensible field set for an Error object', () => {
+            let a = {
+                err: new Error('a'),
+            }
+            assert.strictEqual(JSON5.stringify(a), '{err:{message:\'a\',name:\'Error\'}}')
+        })
+
+        it('dumps a sensible field set for an object class derived from Error', () => {
+            let a = {
+                err: new TypeError('a'),
+            }
+            assert.strictEqual(JSON5.stringify(a), '{err:{message:\'a\',name:\'TypeError\'}}')
+        })
+
+        it('dumps a sensible field set for an augmented Error object', () => {
+            let a = {
+                err: new TypeError('a'),
+            }
+            a.err.info = 'b'
+            a.err.hash = 'c'
+            assert.strictEqual(JSON5.stringify(a), '{err:{message:\'a\',name:\'TypeError\',info:\'b\',hash:\'c\'}}')
         })
     })
 

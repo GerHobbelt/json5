@@ -1330,6 +1330,7 @@
 
     var stringify = function stringify (value, replacer, space, circularRefHandler) {
         const stack = [];
+        const keyStack = [];
         let indent = '';
         let propertyList;
         let replacerFunc;
@@ -1406,6 +1407,17 @@
                 value = String(value);
             } else if (value instanceof Boolean) {
                 value = value.valueOf();
+            } else if (value instanceof Error) {
+                let ex = {
+                    message: value.message,
+                    // stack: value.stack,
+                    name: value.name,
+                };
+                let exKeys = Object.keys(value);
+                for (const exKey of exKeys) {
+                    ex[exKey] = value[exKey];
+                }
+                value = ex;
             }
 
             switch (value) {
@@ -1427,13 +1439,21 @@
                 if (circusPos >= 0) {
                     let err = new TypeError('converting circular structure to JSON5');
                     if (typeof circularRefHandler === 'function') {
-                        return serializeProperty('', {'': circularRefHandler(value, circusPos, stack, key, err)})
+                        // The user callback MAY introduce another circular ref (unwanted) to serialize:
+                        // we cope with it by temporarily switching out the callback, while we
+                        // serialize the produce.
+                        let newValue = circularRefHandler(value, circusPos, stack.slice(0) /* snapshot */, keyStack.slice(0) /* snapshot */, key, err);
+                        let oldF = circularRefHandler;
+                        circularRefHandler = (value, circusPos, stack, keyStack, key, err) => '[!circular ref inside circularRefHandler!]';
+                        let rv = serializeProperty('', {'': newValue});
+                        circularRefHandler = oldF;
+                        return rv
                     } else {
                         throw err
                     }
                 }
 
-                return Array.isArray(value) ? serializeArray(value) : serializeObject(value)
+                return Array.isArray(value) ? serializeArray(value, key) : serializeObject(value, key)
             }
 
             return undefined
@@ -1535,8 +1555,9 @@
             return quoteChar + product + quoteChar
         }
 
-        function serializeObject (value) {
+        function serializeObject (value, key) {
             stack.push(value);
+            keyStack.push(key);
 
             let stepback = indent;
             indent = indent + gap;
@@ -1570,6 +1591,7 @@
                 }
             }
 
+            keyStack.pop();
             stack.pop();
             indent = stepback;
             return final
@@ -1594,8 +1616,9 @@
             return key
         }
 
-        function serializeArray (value) {
+        function serializeArray (value, key) {
             stack.push(value);
+            keyStack.push(key);
 
             let stepback = indent;
             indent = indent + gap;
@@ -1620,6 +1643,7 @@
                 }
             }
 
+            keyStack.pop();
             stack.pop();
             indent = stepback;
             return final
