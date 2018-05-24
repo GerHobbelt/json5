@@ -1,4 +1,13 @@
-[![Build Status](https://travis-ci.org/aseemk/json5.png)](https://travis-ci.org/aseemk/json5)
+[![Build Status](https://travis-ci.org/GerHobbelt/json5.png)](https://travis-ci.org/GerHobbelt/json5)
+
+
+>
+> # Notice
+>
+> This repository contains a fork maintained by GerHobbelt. The original JSON5 work is available at [json5/json5](https://github.com/json5/json5).
+>
+> For an overview of all changes \(fixes and features\), see the section [What's New or Different?](#user-content-whats-new-or-different) further below.
+>
 
 
 # JSON5 – Modern JSON
@@ -279,6 +288,65 @@ Feel free to [file issues](https://github.com/aseemk/json5/issues) and submit
 [pull requests](https://github.com/aseemk/json5/pulls) — contributions are
 welcome. If you do submit a pull request, please be sure to add or update the
 tests, and ensure that `npm test` continues to pass.
+
+
+
+
+
+
+## Contributors
+
+[Githubbers](http://github.com/GerHobbelt/json5/contributors)
+
+
+
+
+
+## What's New or Different?
+
+Here's a comprehensive list of features and fixes compared to the [original](https://github.com/json5/json5
+
+* added support for [ES2015-style `\`...\`` multiline string template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), e.g.
+
+  ```
+  { str: `multiline
+          example
+          string value!` 
+  }
+  ```
+  
+* added support for [heredoc string](https://en.wikipedia.org/wiki/Here_document) values, which must start with `<<` *immediately followed* by a marker, e.g. `EOT` or some other alphanumeric identifier, which, when used on a line alone, will signal the end of the 'heredoc' string. 
+
+  For example:
+
+  ```
+  { str: <<EOT
+          multiline EOT
+          example \n
+          string value!
+  EOT
+  }
+  ```
+  
+  will have encoded the literal string
+  
+  ```
+          multiline EOT
+          example \n
+          string value!
+  ```
+
+  i.e. none of the content of the heredoc will be treated as escaped! (The `\n` in there would thus read as JavaScript string `"\\n"`.)
+  
+* `JSON5.stringify() comes with a *fourth* argument: an optional callback method which will be invoked for each value in the value-to-stringify which would cause a 'cyclical reference' error to be thrown otherwise. The user-specified can deliver an alternative value to encode in its stead or throw the error exception after all.
+
+  Interface definition:
+  
+  **TODO**
+  
+* ... TBD ...
+
+
 
 
 ## License
