@@ -15,9 +15,9 @@ This JavaScript library is a derivative of the official reference implementation
 parsing and serialization libraries, where this derivative includes a few extra features: 
 these extras are marked with XXXXXXXXX in the feature list further below.
 
-[Build Status]: https://travis-ci.org/json5/json5
+[Build Status]: https://travis-ci.org/GerHobbelt/json5
 
-[Coverage Status]: https://coveralls.io/github/json5/json5
+[Coverage Status]: https://coveralls.io/github/GerHobbelt/json5
 
 [JSON]: https://tools.ietf.org/html/rfc7159
 
@@ -321,12 +321,12 @@ codebase from the ground up, and is actively maintaining this project.
 
 
 
-[npm-badge]: https://img.shields.io/npm/v/json5.svg
-[npm-url]: https://npmjs.com/package/json5
+[npm-badge]: https://img.shields.io/npm/v/@gerhobbelt/json5.svg
+[npm-url]: https://npmjs.com/package/@gerhobbelt/json5
 [travis-badge]: https://api.travis-ci.org/GerHobbelt/json5.svg
 [travis-url]: https://travis-ci.org/GerHobbelt/json5
-[coveralls-badge]:https://coveralls.io/repos/aseemk/json5/badge.svg?branch=master&service=github
-[coveralls-url]: https://coveralls.io/github/aseemk/json5?branch=master
-[david-badge]: https://david-dm.org/aseemk/json5.svg
-[david-url]: https://david-dm.org/aseemk/json5
+[coveralls-badge]:https://coveralls.io/repos/GerHobbelt/json5/badge.svg?branch=master&service=github
+[coveralls-url]: https://coveralls.io/github/GerHobbelt/json5?branch=master
+[david-badge]: https://david-dm.org/GerHobbelt/json5.svg
+[david-url]: https://david-dm.org/GerHobbelt/json5
 
