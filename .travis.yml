@@ -11,9 +11,9 @@ node_js:
 
 matrix:
   include:
-    - stage: npm run test4
+    - script: npm run test4
       node_js: "4"
-    - stage: npm run test4
+    - script: npm run test4
       node_js: "5"
 
   # allow_failures:
