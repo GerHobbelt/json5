@@ -10,12 +10,12 @@ node_js:
   - node
 
 matrix:
-  include:
-    - script: npm run test4
-      node_js: "4"
-    - script: npm run test4
-      node_js: "5"
+  # include:
+    # - script: npm run test4
+    #   node_js: "4"
+    # - script: npm run test4
+    #   node_js: "5"
 
-  # allow_failures:
-  #   - env: NODEJS_VERSION=4
-  #   - env: NODEJS_VERSION=5
+  allow_failures:
+    - env: NODEJS_VERSION=4
+    - env: NODEJS_VERSION=5
