@@ -1345,6 +1345,7 @@
             space = replacer.space;
             quote = replacer.quote;
             replacer = replacer.replacer;
+            circularRefHandler = replacer.circularRefHandler;
         }
 
         if (typeof replacer === 'function') {

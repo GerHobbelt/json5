@@ -130,18 +130,18 @@ specification](https://json5.github.io/json5-spec/).
 ### Node.js
 
 ```sh
-npm install json5
+npm install @gerhobbelt/json5
 ```
 
 ```js
-const JSON5 = require('json5')
+const JSON5 = require('@gerhobbelt/json5')
 ```
 
 
 ### Browsers
 
 ```html
-<script src="https://unpkg.com/json5@^1.0.0"></script>
+<script src="https://unpkg.com/@gerhobbelt/json5@1.0.1-29"></script>
 ```
 
 This will create a global `JSON5` variable.
@@ -188,7 +188,7 @@ properties if a replacer array is specified.
 
 #### Syntax
 
-    JSON5.stringify(value[, replacer[, space]])
+    JSON5.stringify(value[, replacer[, space[, circularRefHandler]]])
     JSON5.stringify(value[, options])
 
 
@@ -208,11 +208,47 @@ properties if a replacer array is specified.
   first 10 characters of the string, if it's longer than that) is used as white
   space. If this parameter is not provided (or is null), no white space is used.
   If white space is used, trailing commas will be used in objects and arrays.
+- `circularRefHandler`: A callback function which is invoked for every element
+  which would otherwise cause `JSON5.stringify()` to throw a 
+  `"converting circular structure to JSON5"` *TypeError* exception.
+
+  The callback returns the value to stringify in its stead. When this value
+  happens to contain circular references itself, then these will be detected
+  by `JSON%.stringify()` as encoded as `'[!circular ref inside circularRefHandler!]'`
+  string values instead.
+
+  Callback function arguments: `(value, circusPos, stack, keyStack, key, err)`, where
+
+  + `value`: The circular reference value.
+  + `circusPos`: Index into the `stack[]` and `keyStack[]` arrays, indicating the
+    parent object which is referenced by the `value` circular reference value.
+  + `stack`: The stack of parents (objects, arrays) for this value. The first entry
+    (index 0) is the root `value`. The array is a snapshot (shallow clone) to ensure 
+    user code can simply store this reference value directly [without risking
+    JSON5-internal closure problems which would ensue when we wouldn't have provided
+    you with a snapshot/clone](https://stackoverflow.com/questions/750486/javascript-closure-inside-loops-simple-practical-example).
+  + 'keyStack': The stack of keys, one for each parent, which describe the path
+    to the offending circular reference value for the root `value` down. The first entry
+    (index 0) is the root `value`. Useful when you wish to display a diagnostic 
+    which lists the traversal path through the object hierarchy in the root value
+    towards the circular reference `value` at hand, for instance.  
+    The array is a snapshot (shallow clone) to ensure 
+    user code can simply store this reference value directly [without risking
+    JSON5-internal closure problems which would ensue when we wouldn't have provided
+    you with a snapshot/clone](https://stackoverflow.com/questions/750486/javascript-closure-inside-loops-simple-practical-example).
+  + `key`: Direct parent key of the current `value`. Same as `keyStack[keyStack.length - 1]`.
+  + `err`: The TypeError produced by `JSON5.stringify()`: provided here so your
+    user-defined callback code can deside to throw that circular reference error
+    anyway.  
 - `options`: An object with the following properties:
   - `replacer`: Same as the `replacer` parameter.
   - `space`: Same as the `space` parameter.
   - `quote`: A String representing the quote character to use when serializing
     strings.
+  - `circularRefHandler`: A callback function which is invoked for every element
+    which would otherwise cause `JSON5.stringify()` to throw a 
+    `"converting circular structure to JSON5"` *TypeError* exception. See the 
+    `circularRefHandler` argument description above for more info.
 
 
 #### Return value
@@ -246,7 +282,7 @@ converting JSON5 to JSON and for validating the syntax of JSON5 documents.
 ### Installation
 
 ```sh
-npm install --global json5
+npm install --global @gerhobbelt/json5
 ```
 
 
@@ -273,7 +309,7 @@ If `<file>` is not provided, then STDIN is used.
 ### Development
 
 ```sh
-git clone https://github.com/json5/json5
+git clone https://github.com/GerHobbelt/json5
 cd json5
 npm install
 ```
