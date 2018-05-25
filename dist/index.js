@@ -1337,6 +1337,8 @@
         let gap = '';
         let quote;
 
+        // check if `replacer` is really an `options` object instead
+        // and take the arguments from there if it is.
         if (
             replacer != null &&
             typeof replacer === 'object' &&
@@ -1344,8 +1346,8 @@
         ) {
             space = replacer.space;
             quote = replacer.quote;
-            replacer = replacer.replacer;
             circularRefHandler = replacer.circularRefHandler;
+            replacer = replacer.replacer;
         }
 
         if (typeof replacer === 'function') {
