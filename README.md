@@ -345,7 +345,7 @@ JSON5, please submit an issue to this repository.
 
 Here's a comprehensive list of features and fixes compared to the [original](https://github.com/json5/json5
 
-* added support for [ES2015-style `\`...\`` multiline string template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), e.g.
+* added support for [ES2015-style \`...\` multiline string template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), e.g.
 
   ```
   { str: `multiline
