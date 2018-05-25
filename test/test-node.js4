@@ -1,0 +1,10 @@
+var assert = require('assert')
+
+console.log('testing if the library at least parses ok and runs some very basic operations in old NodeJS version');
+
+var JSON5 = require('../');
+
+var test = {a: 1, b: 2, c: 'x'};
+assert.deepStrictEqual(test, JSON5.parse(JSON5.stringify(test, null, 2)));
+
+console.log('seems OK');

@@ -2,8 +2,6 @@ language: node_js
 sudo: false
 
 node_js:
-  - 4
-  - 5
   - 6
   - 7
   - 8
@@ -12,6 +10,12 @@ node_js:
   - node
 
 matrix:
-  allow_failures:
-    - env: NODEJS_VERSION=4
-    - env: NODEJS_VERSION=5
+  include:
+    - stage: npm run test4
+      node_js: "4"
+    - stage: npm run test4
+      node_js: "5"
+
+  # allow_failures:
+  #   - env: NODEJS_VERSION=4
+  #   - env: NODEJS_VERSION=5

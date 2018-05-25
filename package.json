@@ -22,6 +22,7 @@
     "preversion-orig": "npm run production",
     "production": "npm run lint && npm test && npm run build",
     "test": "tap -Rspec --100 test",
+    "test4": "node test/test-node.js4",
     "version": "npm run build-package && git add package.json5",
     "pub": "npm publish --access public"
   },
