@@ -343,7 +343,7 @@ JSON5, please submit an issue to this repository.
 
 ## What's New or Different?
 
-Here's a comprehensive list of features and fixes compared to the [original](https://github.com/json5/json5
+Here's a comprehensive list of features and fixes compared to the [original](https://github.com/json5/json5)
 
 * added support for [ES2015-style \`...\` multiline string template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), e.g.
 
@@ -354,7 +354,7 @@ Here's a comprehensive list of features and fixes compared to the [original](htt
   }
   ```
   
-* added support for [heredoc string](https://en.wikipedia.org/wiki/Here_document) values, which must start with `<<` *immediately followed* by a marker, e.g. `EOT` or some other alphanumeric identifier, which, when used on a line alone, will signal the end of the 'heredoc' string. 
+* added support for [heredoc string](https://en.wikipedia.org/wiki/Here_document) values, which must start with `<<` immediately followed by a marker, e.g. `EOT` or some other alphanumeric identifier, which, when used on a line alone, will signal the end of the 'heredoc' string. 
 
   For example:
 
@@ -377,7 +377,7 @@ Here's a comprehensive list of features and fixes compared to the [original](htt
 
   i.e. none of the content of the heredoc will be treated as escaped! (The `\n` in there would thus read as JavaScript string `"\\n"`.)
   
-* `JSON5.stringify() comes with a *fourth* argument: an optional callback method which will be invoked for each value in the value-to-stringify which would cause a 'cyclical reference' error to be thrown otherwise. The user-specified can deliver an alternative value to encode in its stead or throw the error exception after all.
+* `JSON5.stringify()` comes with a *fourth* argument: an optional callback method which will be invoked for each value in the value-to-stringify which would cause a 'cyclical reference' error to be thrown otherwise. The user-specified can deliver an alternative value to encode in its stead or throw the error exception after all.
 
   Interface definition:
   
