@@ -83,8 +83,16 @@ describe('JSON5', () => {
                 // eslint-disable-next-line no-new-wrappers
                 assert.strictEqual(JSON5.stringify(/['"`]+/gi), '{re:\'/[\\\'"`]+/gi\',source:\'[\\\'"`]+\',flags:\'gi\'}')
             })
+
+            it('stringifies instance with extra attributes', () => {
+                let x = /x/;
+                x.boo = 'baa';
+                assert.strictEqual(JSON5.stringify(x), '{re:\'/x/\',source:\'x\',flags:\'\',boo:\'baa\'}')
+            })
+
         })
 
+        // uses built-in `toJSON()` method:
         describe('dates', () => {
             it('stringifies Date object', () => {
                 // eslint-disable-next-line no-new-wrappers
@@ -94,6 +102,11 @@ describe('JSON5', () => {
             it('stringifies timestamp', () => {
                 // eslint-disable-next-line no-new-wrappers
                 assert.strictEqual(JSON5.stringify(new Date(2018, 9, 11, 3, 7, 24)), '\'2018-10-11T01:07:24.000Z\'')
+            })
+
+            it('stringifies time', () => {
+                // eslint-disable-next-line no-new-wrappers
+                assert.strictEqual(JSON5.stringify(new Date(1,0,0,1,0,0,500)), '\'1900-12-31T00:00:00.500Z\'')
             })
         })
 
