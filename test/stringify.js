@@ -85,11 +85,10 @@ describe('JSON5', () => {
             })
 
             it('stringifies instance with extra attributes', () => {
-                let x = /x/;
-                x.boo = 'baa';
+                let x = /x/
+                x.boo = 'baa'
                 assert.strictEqual(JSON5.stringify(x), '{re:\'/x/\',source:\'x\',flags:\'\',boo:\'baa\'}')
             })
-
         })
 
         // uses built-in `toJSON()` method:
@@ -106,7 +105,7 @@ describe('JSON5', () => {
 
             it('stringifies time', () => {
                 // eslint-disable-next-line no-new-wrappers
-                assert.strictEqual(JSON5.stringify(new Date(1,0,0,1,0,0,500)), '\'1900-12-31T00:00:00.500Z\'')
+                assert.strictEqual(JSON5.stringify(new Date(1, 0, 0, 1, 0, 0, 500)), '\'1900-12-31T00:00:00.500Z\'')
             })
         })
 

@@ -1449,15 +1449,6 @@
                         re[exKey] = value[exKey];
                     }
                     value = re;
-                } else if (value instanceof Date) {
-                    let dt = {
-                        date: String(value),
-                    };
-                    let exKeys = Object.keys(value);
-                    for (const exKey of exKeys) {
-                        dt[exKey] = value[exKey];
-                    }
-                    value = dt;
                 }
 
                 let circusPos = stack.indexOf(value);
