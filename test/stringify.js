@@ -65,6 +65,38 @@ describe('JSON5', () => {
             })
         })
 
+        describe('regexes', () => {
+            it('stringifies simple regex', () => {
+                assert.strictEqual(JSON5.stringify(/x/), '{re:\'/x/\',source:\'x\',flags:\'\'}')
+            })
+
+            it('stringifies RegExp instance', () => {
+                // eslint-disable-next-line no-new-wrappers
+                assert.strictEqual(JSON5.stringify(new RegExp('x', 'g')), '{re:\'/x/g\',source:\'x\',flags:\'g\'}')
+            })
+
+            it('stringifies simple regex with flags', () => {
+                assert.strictEqual(JSON5.stringify(/^[a]$/g), '{re:\'/^[a]$/g\',source:\'^[a]$\',flags:\'g\'}')
+            })
+
+            it('stringifies simple regex with quotes', () => {
+                // eslint-disable-next-line no-new-wrappers
+                assert.strictEqual(JSON5.stringify(/['"`]+/gi), '{re:\'/[\\\'"`]+/gi\',source:\'[\\\'"`]+\',flags:\'gi\'}')
+            })
+        })
+
+        describe('dates', () => {
+            it('stringifies Date object', () => {
+                // eslint-disable-next-line no-new-wrappers
+                assert.strictEqual(JSON5.stringify(new Date(2018, 7, 25)), '\'2018-08-24T22:00:00.000Z\'')
+            })
+
+            it('stringifies timestamp', () => {
+                // eslint-disable-next-line no-new-wrappers
+                assert.strictEqual(JSON5.stringify(new Date(2018, 9, 11, 3, 7, 24)), '\'2018-10-11T01:07:24.000Z\'')
+            })
+        })
+
         it('stringifies nulls', () => {
             assert.strictEqual(JSON5.stringify(null), 'null')
         })

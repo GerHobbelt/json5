@@ -1410,17 +1410,6 @@
                 value = String(value);
             } else if (value instanceof Boolean) {
                 value = value.valueOf();
-            } else if (value instanceof Error) {
-                let ex = {
-                    message: value.message,
-                    // stack: value.stack,
-                    name: value.name,
-                };
-                let exKeys = Object.keys(value);
-                for (const exKey of exKeys) {
-                    ex[exKey] = value[exKey];
-                }
-                value = ex;
             }
 
             switch (value) {
@@ -1438,6 +1427,39 @@
             }
 
             if (typeof value === 'object') {
+                if (value instanceof Error) {
+                    let ex = {
+                        message: value.message,
+                        // stack: value.stack,
+                        name: value.name,
+                    };
+                    let exKeys = Object.keys(value);
+                    for (const exKey of exKeys) {
+                        ex[exKey] = value[exKey];
+                    }
+                    value = ex;
+                } else if (value instanceof RegExp) {
+                    let re = {
+                        re: String(value),
+                        source: value.source,
+                        flags: value.flags,
+                    };
+                    let exKeys = Object.keys(value);
+                    for (const exKey of exKeys) {
+                        re[exKey] = value[exKey];
+                    }
+                    value = re;
+                } else if (value instanceof Date) {
+                    let dt = {
+                        date: String(value),
+                    };
+                    let exKeys = Object.keys(value);
+                    for (const exKey of exKeys) {
+                        dt[exKey] = value[exKey];
+                    }
+                    value = dt;
+                }
+
                 let circusPos = stack.indexOf(value);
                 if (circusPos >= 0) {
                     let err = new TypeError('converting circular structure to JSON5');
