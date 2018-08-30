@@ -31,7 +31,7 @@ these extras are marked with XXXXXXXXX in the feature list further below.
 
 [Coverage Status]: https://coveralls.io/github/GerHobbelt/json5
 
-[JSON]: https://tools.ietf.org/html/rfc7159
+[JSON]: https://tools.ietf.org/html/rfc8259
 
 [ECMAScript 5.1]: https://www.ecma-international.org/ecma-262/5.1/
 
