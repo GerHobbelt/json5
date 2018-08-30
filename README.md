@@ -304,7 +304,7 @@ If `<file>` is not provided, then STDIN is used.
 - `-h`, `--help`: Output usage information
 
 
-## Contibuting
+## Contributing
 
 ### Development
 
