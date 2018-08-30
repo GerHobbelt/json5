@@ -1,6 +1,6 @@
 {
   "name": "@gerhobbelt/json5",
-  "version": "2.0.0-34",
+  "version": "2.0.0-35",
   "description": "JSON for humans.",
   "main": "dist/index.js",
   "bin": "lib/cli.js",
