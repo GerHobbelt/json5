@@ -18,17 +18,17 @@ module.exports = [
         ],
     },
     // Minified
-    {
-        input: 'lib/index.js',
-        output: {
-            file: pkg.browser.replace(/\.js$/, '.min.js'),
-            format: 'umd',
-            name: 'JSON5',
-        },
-        uglify(),
-            resolve(),
-            commonjs(),
-            terser(),
-        ],
-    },
+    // {
+    //     input: 'lib/index.js',
+    //     output: {
+    //         file: pkg.browser.replace(/\.js$/, '.min.js'),
+    //         format: 'umd',
+    //         name: 'JSON5',
+    //     },
+    //     plugins: [
+    //         resolve(),
+    //         commonjs(),
+    //         terser(),
+    //     ],
+    // },
 ]
