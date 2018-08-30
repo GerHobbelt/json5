@@ -141,7 +141,7 @@ const JSON5 = require('@gerhobbelt/json5')
 ### Browsers
 
 ```html
-<script src="https://unpkg.com/@gerhobbelt/json5@1.0.1-29"></script>
+<script src="https://unpkg.com/@gerhobbelt/json5@2.0.0-33"></script>
 ```
 
 This will create a global `JSON5` variable.

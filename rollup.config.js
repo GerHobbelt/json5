@@ -1,18 +1,34 @@
 const resolve = require('rollup-plugin-node-resolve')
 const commonjs = require('rollup-plugin-commonjs')
-// const uglify = require('rollup-plugin-uglify')
+const terser = require('rollup-plugin-terser').terser
 const pkg = require('./package.json')
 
-module.exports = {
-    input: 'lib/index.js',
-    output: {
-        file: pkg.browser,
-        format: 'umd',
-        name: 'JSON5',
+module.exports = [
+    // Non-minified
+    {
+        input: 'lib/index.js',
+        output: {
+            file: pkg.browser,
+            format: 'umd',
+            name: 'JSON5',
+        },
+        plugins: [
+            resolve(),
+            commonjs(),
+        ],
     },
-    plugins: [
-        resolve(),
-        commonjs(),
-        // uglify(), -- do NOT compress the library in /dist/
-    ],
-}
+    // Minified
+    {
+        input: 'lib/index.js',
+        output: {
+            file: pkg.browser.replace(/\.js$/, '.min.js'),
+            format: 'umd',
+            name: 'JSON5',
+        },
+        uglify(),
+            resolve(),
+            commonjs(),
+            terser(),
+        ],
+    },
+]
