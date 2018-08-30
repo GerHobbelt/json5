@@ -1,7 +1,13 @@
 title: JSON5
 description: JSON for Humans
-show_downloads: true
+show_downloads: false
 theme: jekyll-theme-minimal
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  gfm_quirks:
+  
 
 gems:
   - jekyll-mentions
