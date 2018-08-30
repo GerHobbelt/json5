@@ -1,5 +1,6 @@
 # JSON5 – JSON for Humans
 
+[![GitHub Repository][github-badge]][github-url]
 [![npm version][npm-badge]][npm-url]
 [![Build Status][travis-badge]][travis-url]
 [![Coverage Status][coveralls-badge]][coveralls-url]
@@ -33,6 +34,7 @@ these extras are marked with XXXXXXXXX in the feature list further below.
 [JSON]: https://tools.ietf.org/html/rfc7159
 
 [ECMAScript 5.1]: https://www.ecma-international.org/ecma-262/5.1/
+
 
 
 
@@ -390,7 +392,8 @@ Here's a comprehensive list of features and fixes compared to the [original](htt
 
 ## License
 
-MIT. See [LICENSE.md](./LICENSE.md) for details.
+MIT. See [LICENSE.md](https://github.com/json5/json5/blob/master/LICENSE.md) for
+details.
 
 
 ## Credits
@@ -427,6 +430,8 @@ codebase from the ground up, and is actively maintaining this project.
 
 
 
+[github-badge]: https://img.shields.io/badge/github-json5%2Fjson5-blue.svg
+[github-url]: https://github.com/json5/json5
 [npm-badge]: https://img.shields.io/npm/v/@gerhobbelt/json5.svg
 [npm-url]: https://npmjs.com/package/@gerhobbelt/json5
 [travis-badge]: https://api.travis-ci.org/GerHobbelt/json5.svg
