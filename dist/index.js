@@ -1,8 +1,8 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
 	typeof define === 'function' && define.amd ? define(factory) :
-	(global.JSON5 = factory());
-}(this, (function () { 'use strict';
+	(global = global || self, global.JSON5 = factory());
+}(this, function () { 'use strict';
 
 	function createCommonjsModule(fn, module) {
 		return module = { exports: {} }, fn(module, module.exports), module.exports;
@@ -18,7 +18,7 @@
 	});
 
 	var _core = createCommonjsModule(function (module) {
-	var core = module.exports = { version: '2.5.7' };
+	var core = module.exports = { version: '2.6.3' };
 	if (typeof __e == 'number') { __e = core; } // eslint-disable-line no-undef
 	});
 	var _core_1 = _core.version;
@@ -1967,4 +1967,4 @@
 
 	return es5;
 
-})));
+}));
