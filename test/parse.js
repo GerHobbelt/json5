@@ -367,6 +367,17 @@ t.test('parse(text)', t => {
         t.end()
     })
 
+    t.test('sanity checks', t => {
+        t.throws(() => {
+                JSON5.parse('{a:1,a:2}')
+            }, 
+            {},
+            'throws an error when encountering duplicate keys'
+        )
+
+        t.end()
+    })
+
     t.end()
 })
 
