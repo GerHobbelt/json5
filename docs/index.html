@@ -88,7 +88,7 @@ specification</a>.</p>
 <pre><code class="language-js">const JSON5 = require('@gerhobbelt/json5')
 </code></pre>
 <h3>Browsers</h3>
-<pre><code class="language-html">&lt;script src=&quot;https://unpkg.com/@gerhobbelt/json5@2.1.0-39&quot;&gt;&lt;/script&gt;
+<pre><code class="language-html">&lt;script src=&quot;https://unpkg.com/@gerhobbelt/json5@2.1.0-40&quot;&gt;&lt;/script&gt;
 </code></pre>
 <p>This will create a global <code>JSON5</code> variable.</p>
 <h2>API</h2>
@@ -226,7 +226,7 @@ npm install
 <p>To report bugs or request features regarding the JSON5 data format, please
 submit an issue to the <a href="https://github.com/json5/json5-spec">official specification
 repository</a>.</p>
-<p>To report bugs or request features regarding the JavaScript implentation of
+<p>To report bugs or request features regarding the JavaScript implementation of
 JSON5, please submit an issue to this repository.</p>
 <h2>Contributors</h2>
 <p><a href="http://github.com/GerHobbelt/json5/contributors">Githubbers</a></p>
@@ -262,6 +262,9 @@ EOT
 <p><code>JSON5.stringify()</code> comes with a <em>fourth</em> argument: an optional callback method which will be invoked for each value in the value-to-stringify which would cause a 'cyclical reference' error to be thrown otherwise. The user-specified can deliver an alternative value to encode in its stead or throw the error exception after all.</p>
 <p>Interface definition:</p>
 <p><strong>TODO</strong></p>
+</li>
+<li>
+<p>Duplicate the same key in an object causes a syntax error</p>
 </li>
 <li>
 <p>... TBD ...</p>

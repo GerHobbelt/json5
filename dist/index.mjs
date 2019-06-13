@@ -1209,7 +1209,15 @@ function push () {
         if (Array.isArray(parent)) {
             parent.push(value);
         } else {
-            parent[key] = value;
+            if (parent.hasOwnProperty(key)) {
+                throw duplicateKey(value, parent[key]);
+            }
+            Object.defineProperty(parent, key, {
+                configurable: true,
+                enumerable: true,
+                writable: true,
+                value,
+            });
         }
     }
 
@@ -1266,6 +1274,10 @@ function invalidChar (c) {
 
 function invalidEOF () {
     return syntaxError(`JSON5: invalid end of input at ${line}:${column}`)
+}
+
+function duplicateKey(value, existingValue) {
+    return syntaxError(`JSON5: Cannot assign '${JSON.stringify(value)}' to the object's key '${key}'. Its value is already present as '${existingValue}'. Duplicate key at ${line}:${column}`)
 }
 
 // This code is unreachable.
@@ -1609,17 +1621,17 @@ var stringify = function stringify (value, replacer, space, circularRefHandler) 
 
     function serializeKey (key) {
         if (key.length === 0) {
-            return quoteString(key, true)
+            return quoteString(key)
         }
 
         const firstChar = String.fromCodePoint(key.codePointAt(0));
         if (!util.isIdStartChar(firstChar)) {
-            return quoteString(key, true)
+            return quoteString(key)
         }
 
         for (let i = firstChar.length; i < key.length; i++) {
             if (!util.isIdContinueChar(String.fromCodePoint(key.codePointAt(i)))) {
-                return quoteString(key, true)
+                return quoteString(key)
             }
         }
 
