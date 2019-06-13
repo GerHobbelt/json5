@@ -385,6 +385,8 @@ Here's a comprehensive list of features and fixes compared to the [original](htt
   
   **TODO**
   
+* Duplicate the same key in an object causes a syntax error
+
 * ... TBD ...
 
 
