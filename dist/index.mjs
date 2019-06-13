@@ -1210,7 +1210,7 @@ function push () {
             parent.push(value);
         } else {
             if (parent.hasOwnProperty(key)) {
-                throw duplicateKey(value, parent[key]);
+                throw duplicateKey(value, parent[key])
             }
             Object.defineProperty(parent, key, {
                 configurable: true,
@@ -1276,7 +1276,7 @@ function invalidEOF () {
     return syntaxError(`JSON5: invalid end of input at ${line}:${column}`)
 }
 
-function duplicateKey(value, existingValue) {
+function duplicateKey (value, existingValue) {
     return syntaxError(`JSON5: Cannot assign '${JSON.stringify(value)}' to the object's key '${key}'. Its value is already present as '${existingValue}'. Duplicate key at ${line}:${column}`)
 }
 
