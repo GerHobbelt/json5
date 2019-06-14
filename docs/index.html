@@ -48,7 +48,10 @@ been extended to JSON5.</p>
 <li>Strings may be single quoted.</li>
 <li>Strings may span multiple lines by escaping new line characters.</li>
 <li>Strings may include character escapes.</li>
+<li>Strings may be <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals">ES2015-style `...` multiline string template literals</a>.</li>
+<li>Strings may be <a href="https://en.wikipedia.org/wiki/Here_document">&quot;heredoc&quot; strings</a>.</li>
 </ul>
+<p>Note the restrictions mentioned below in the section about enhanced string formats.</p>
 <h3>Numbers</h3>
 <ul>
 <li>Numbers may be hexadecimal.</li>
@@ -88,12 +91,12 @@ specification</a>.</p>
 <pre><code class="language-js">const JSON5 = require('@gerhobbelt/json5')
 </code></pre>
 <h3>Browsers</h3>
-<pre><code class="language-html">&lt;script src=&quot;https://unpkg.com/@gerhobbelt/json5@2.1.0-41&quot;&gt;&lt;/script&gt;
+<pre><code class="language-html">&lt;script src=&quot;https://unpkg.com/@gerhobbelt/json5@2.1.0-42&quot;&gt;&lt;/script&gt;
 </code></pre>
 <p>This will create a global <code>JSON5</code> variable.</p>
 <h2>API</h2>
 <p>The JSON5 API is compatible with the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON">JSON API</a>.</p>
-<h3>JSON5.parse()</h3>
+<h3><code>JSON5.parse()</code></h3>
 <p>Parses a JSON5 string, constructing the JavaScript value or object described by
 the string. An optional reviver function can be provided to perform a
 transformation on the resulting object before it is returned.</p>
@@ -102,13 +105,33 @@ transformation on the resulting object before it is returned.</p>
 </code></pre>
 <h4>Parameters</h4>
 <ul>
-<li><code>text</code>: The string to parse as JSON5.</li>
-<li><code>reviver</code>: If a function, this prescribes how the value originally produced by
-parsing is transformed, before being returned.</li>
+<li>
+<p><code>text</code>: The string to parse as JSON5.</p>
+</li>
+<li>
+<p><code>reviver</code>: If a function, this prescribes how the value originally produced by
+parsing is transformed, before being returned.</p>
+<p><code>reviver</code> callback function arguments: <code>(key, value)</code>, where</p>
+<ul>
+<li><code>this</code>: references the JavaScript object containing the key/value pair.</li>
+<li><code>key</code>: a string representing the attribute <code>value</code>.</li>
+<li><code>value</code>: the value of the <code>this[key]</code> attribute, as parsed by JSON5.</li>
+</ul>
+<p>The <code>reviver()</code> function returns the (possibly altered/'revived') <code>value</code>.</p>
+<p>When <code>reviver()</code> returns <code>undefined</code>, the attribute (<code>this[key]</code>) is <em>deleted</em>
+from the object.</p>
+<p>The root of the parsed JSON5 object tree is also passed into <code>reviver()</code> as an
+attribute with key <code>''</code> (empty string), thus allowing <code>reviver()</code> to postprocess
+every part of the parsed JSON5 input.</p>
+<p>Note that <code>reviver()</code> is called as part of the JSON5 parse <em>postprocess</em> and thus
+CANNOT be used to encode alternate behaviour when encountering duplicate keys in
+an input object or other parse errors: JSON5 first performs a full parse, before
+invoking <code>reviver()</code> on each of the regenerated elements.</p>
+</li>
 </ul>
 <h4>Return value</h4>
 <p>The object corresponding to the given JSON5 text.</p>
-<h3>JSON5.stringify()</h3>
+<h3><code>JSON5.stringify()</code></h3>
 <p>Converts a JavaScript value to a JSON5 string, optionally replacing values if a
 replacer function is specified, or optionally including only the specified
 properties if a replacer array is specified.</p>
@@ -144,7 +167,7 @@ which would otherwise cause <code>JSON5.stringify()</code> to throw a
 <code>&quot;converting circular structure to JSON5&quot;</code> <em>TypeError</em> exception.</p>
 <p>The callback returns the value to stringify in its stead. When this value
 happens to contain circular references itself, then these will be detected
-by <code>JSON%.stringify()</code> as encoded as <code>'[!circular ref inside circularRefHandler!]'</code>
+by <code>JSON5.stringify()</code> and encoded as <code>'[!circular ref inside circularRefHandler!]'</code>
 string values instead.</p>
 <p>Callback function arguments: <code>(value, circusPos, stack, keyStack, key, err)</code>, where</p>
 <ul>
@@ -177,11 +200,18 @@ anyway.</li>
 <li><code>replacer</code>: Same as the <code>replacer</code> parameter.</li>
 <li><code>space</code>: Same as the <code>space</code> parameter.</li>
 <li><code>quote</code>: A String representing the quote character to use when serializing
-strings.</li>
+strings. When not explicitly specified, JSON5 will heuristically determine
+the quote to use for each string value to minimize the number of character
+escapes (and thus minimize output size).</li>
 <li><code>circularRefHandler</code>: A callback function which is invoked for every element
 which would otherwise cause <code>JSON5.stringify()</code> to throw a
 <code>&quot;converting circular structure to JSON5&quot;</code> <em>TypeError</em> exception. See the
 <code>circularRefHandler</code> argument description above for more info.</li>
+<li><code>noES6StringOutput</code>: when set to <code>true</code> (or a truthy value)
+<code>JSON5.stringify()</code> will not output ('`') backtick-encoded
+ES6 string literals; instead the strings will be output in JSON5 Standard
+single- or double-quoted escaped string values. You may set this option to
+output JSON5 files which will be conpatible with other Standard JSON5 readers.</li>
 </ul>
 </li>
 </ul>
@@ -196,6 +226,8 @@ statement.</p>
 example:</p>
 <pre><code class="language-js">const config = require('./config.json5')
 </code></pre>
+<p><strong>NOTE</strong>: This, of course, assumes the <code>require</code>d JSON5 file DOES NOT contain &quot;heredoc&quot; formatted
+string content!</p>
 <h2>CLI</h2>
 <p>Since JSON is more widely used than JSON5, this package includes a CLI for
 converting JSON5 to JSON and for validating the syntax of JSON5 documents.</p>
@@ -240,9 +272,31 @@ JSON5, please submit an issue to this repository.</p>
         string value!` 
 }
 </code></pre>
+<p><strong>Notes on this enhanced string format</strong>:</p>
+<ul>
+<li>
+<p>While <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Template_literals">The Template Literals Spec</a>
+says otherwise, we still DO NOT support octal escapes in JSON5 '<code>'-delimited *multiline strings*, as these ARE NOT identical to JavaScript 'template strings' as we DO NOT intend to support the </code>${...}` template variable expansion feature either!</p>
+<p>The <em>multiline string literals</em> are available to ease writing JSON5 content
+by hand (or generator) where the string content spans multiple lines and/or
+contains various quote characters, thus minimizing the need for escaping
+content.</p>
 </li>
 <li>
-<p>added support for <a href="https://en.wikipedia.org/wiki/Here_document">heredoc string</a> values, which must start with <code>&lt;&lt;</code> immediately followed by a marker, e.g. <code>EOT</code> or some other alphanumeric identifier, which, when used on a line alone, will signal the end of the 'heredoc' string.</p>
+<p>Any MAC or WINDOWS style line ends are transformed to standard UNIX line ends,
+i.e. these transformations are done automatically by JSON5:</p>
+<ul>
+<li>CRLF -&gt; LF</li>
+<li>CR -&gt; LF</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>added support for <a href="https://en.wikipedia.org/wiki/Here_document">heredoc string</a> values,
+which must start with <code>&lt;&lt;</code> immediately followed by a marker, e.g. <code>EOT</code> or
+some other alphanumeric identifier, which, when used on a line alone, will
+signal the end of the 'heredoc' string.</p>
 <p>For example:</p>
 <pre><code>{ str: &lt;&lt;EOT
         multiline EOT
@@ -256,15 +310,75 @@ EOT
         example \n
         string value!
 </code></pre>
-<p>i.e. none of the content of the heredoc will be treated as escaped! (The <code>\n</code> in there would thus read as JavaScript string <code>&quot;\\n&quot;</code>.)</p>
+<p>i.e. none of the content of the heredoc will be treated as escaped! (The <code>\n</code> in
+there would thus read as JavaScript string <code>&quot;\\n&quot;</code>.)</p>
+<p><strong>Notes on this enhanced string format</strong>:</p>
+<ul>
+<li>
+<p>When parsing heredoc values, we must extract the EOT marker before anything
+else. Once we've done that, we skip the first newline and start
+scanning/consuming heredoc content until we hit the EOT marker on a line
+by itself, sans whitespace.</p>
 </li>
 <li>
-<p><code>JSON5.stringify()</code> comes with a <em>fourth</em> argument: an optional callback method which will be invoked for each value in the value-to-stringify which would cause a 'cyclical reference' error to be thrown otherwise. The user-specified can deliver an alternative value to encode in its stead or throw the error exception after all.</p>
-<p>Interface definition:</p>
-<p><strong>TODO</strong></p>
+<p>We accept 2 or more(!) <code>&lt;</code> characters to mark the start of a heredoc chunk.</p>
 </li>
 <li>
-<p>Duplicate the same key in an object causes a syntax error</p>
+<p>We accept any non-whitespace character sequence as heredoc EOT marker.</p>
+</li>
+<li>
+<p>By convention we do not accept 'formatting whitespace/indentation' before the EOT
+marker on the same line.</p>
+<p>The <em>content</em> of the heredoc starts after the first CR/LF;
+we DO NOT tolerate trailing whitespace or any other cruft immediately
+following the EOT marker!</p>
+</li>
+<li>
+<p>JSON5 scans for a lone heredoc EOT marker to terminate the string content;
+until we find one, everything is literal string content.</p>
+</li>
+<li>
+<p>heredoc content DOES NOT process escape sequences: everything is passed on as-is!</p>
+</li>
+<li>
+<p>The content ENDS <em>before</em> the last CR/LF before the lone EOT marker;
+i.e. the EOT marker must exist
+on a line by itself, without any preceeding or trailing whitespace.</p>
+</li>
+<li>
+<p>If the JSON5 field is followed by more data, the separator (comma, bracket, ...)
+must exist on the line <em>past</em> the EOT marker line: the EOT must be
+clearly 'alone' in there, e.g.:</p>
+<pre><code>{ str: &lt;&lt;EOT
+multiline EOT
+example \n
+string value!
+EOT
+, extra: 42
+}
+</code></pre>
+</li>
+<li>
+<p>CR / CRLF / LF MAC/Windows/UNIX line ends in the content ARE NOT transformed.</p>
+<p>This differs from the 'multiline string literal' type described above,
+where all line endings are automatically converted to UNIX style '\n'.
+Hence one may consider heredoc as a <em>binary data</em> format.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><code>JSON5.stringify()</code> comes with a <em>fourth</em> argument: an optional callback method
+which will be invoked for each value in the value-to-stringify which would cause
+a 'cyclical reference' error to be thrown otherwise.</p>
+<p>The user-specified callback can deliver an alternative value to encode in its stead
+or throw the error exception after all.</p>
+<p>See the API documentation further above.</p>
+</li>
+<li>
+<p>Duplicate the same key in an object causes a syntax error when parsing JSON5 input.
+(This can happen, for instance, when you feed manually edited JSON5 content
+to <code>JSON5.parse()</code> or when processing JSON5 content which has been (incorrectly)
+merged by arbitrary text diff/patch tools.)</p>
 </li>
 <li>
 <p>... TBD ...</p>

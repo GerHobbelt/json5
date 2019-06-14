@@ -807,7 +807,7 @@ const lexStates = {
 
                 // replicate the peek()+read() location tracking functionality here
                 // for performance reasons:
-                let lines = buffer.split('\n');
+                let lines = buffer.split(/\r\n|\n|\r/);
                 line += lines.length + 1; /* line carrying the EOT marker */
                 // since a heredoc spans entire lines and the sentinel itself is terminated by another newline,
                 // we can safely reset the column value:
@@ -1342,6 +1342,7 @@ var stringify = function stringify (value, replacer, space, circularRefHandler) 
     let replacerFunc;
     let gap = '';
     let quote;
+    let noES6string;
 
     // check if `replacer` is really an `options` object instead
     // and take the arguments from there if it is.
@@ -1352,6 +1353,7 @@ var stringify = function stringify (value, replacer, space, circularRefHandler) 
     ) {
         space = replacer.space;
         quote = replacer.quote;
+        noES6string = replacer.noES6StringOutput;
         circularRefHandler = replacer.circularRefHandler;
         replacer = replacer.replacer;
     }
@@ -1425,7 +1427,11 @@ var stringify = function stringify (value, replacer, space, circularRefHandler) 
         }
 
         if (typeof value === 'string') {
-            return quoteStringES6(value)
+            if (noES6string) {
+                return quoteString(value)
+            } else {
+                return quoteStringES6(value)
+            }
         }
 
         if (typeof value === 'number') {
