@@ -334,7 +334,7 @@ If `<file>` is not provided, then STDIN is used.
 #### Options:
 
 - `-s`, `--space`: The number of spaces to indent or `t` for tabs
-- `-o`, `--out-file [file]`: Output to the specified file, otherwise STDOUT
+- `-o`, `--out-file [file]`: Output to the specified file, otherwise STDOUT. (🎷🍓 If `-` is given as the `file` name, STDOUT is used.)
 - `-v`, `--validate`: Validate JSON5 but do not output JSON
 - `-V`, `--version`: Output the version number
 - `-h`, `--help`: Output usage information
