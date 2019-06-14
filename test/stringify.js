@@ -443,6 +443,12 @@ describe('JSON5', () => {
         it('accepts space as an option', () => {
             assert.strictEqual(JSON5.stringify([1], {space: 2}), '[\n  1,\n]')
         })
+
+        it('accepts noES6StringOutput as an option', () => {
+            assert.strictEqual(JSON5.stringify('Sid\nVicious\nand\nThe\nStampeding\nHordes\nOf\nDoom', {
+                noES6StringOutput: true,
+            }), "'Sid\\nVicious\\nand\\nThe\\nStampeding\\nHordes\\nOf\\nDoom'")
+        })
     })
 
     describe('#stringify(value, {quote})', () => {
