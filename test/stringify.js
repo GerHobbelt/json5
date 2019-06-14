@@ -95,17 +95,17 @@ describe('JSON5', () => {
         describe('dates', () => {
             it('stringifies Date object', () => {
                 // eslint-disable-next-line no-new-wrappers
-                assert.strictEqual(JSON5.stringify(new Date(2018, 7, 25)), '\'2018-08-24T22:00:00.000Z\'')
+                assert.strictEqual(JSON5.stringify(new Date(Date.UTC(2018, 7, 25))), '\'2018-08-25T00:00:00.000Z\'')
             })
 
             it('stringifies timestamp', () => {
                 // eslint-disable-next-line no-new-wrappers
-                assert.strictEqual(JSON5.stringify(new Date(2018, 9, 11, 3, 7, 24)), '\'2018-10-11T01:07:24.000Z\'')
+                assert.strictEqual(JSON5.stringify(new Date(Date.UTC(2018, 9, 11, 3, 7, 24))), '\'2018-10-11T03:07:24.000Z\'')
             })
 
             it('stringifies time', () => {
                 // eslint-disable-next-line no-new-wrappers
-                assert.strictEqual(JSON5.stringify(new Date(1, 0, 0, 1, 0, 0, 500)), '\'1900-12-31T00:00:00.500Z\'')
+                assert.strictEqual(JSON5.stringify(new Date(Date.UTC(1, 0, 0, 1, 0, 0, 500))), '\'1900-12-31T01:00:00.500Z\'')
             })
         })
 
