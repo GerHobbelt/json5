@@ -1,7 +1,7 @@
 // This is a generated file. Do not edit.
 {
   name: '@gerhobbelt/json5',
-  version: '2.1.0-43',
+  version: '2.1.0-44',
   description: 'JSON for humans.',
   main: 'dist/index.js',
   bin: 'lib/cli.js',
@@ -11,7 +11,7 @@
     'dist/',
   ],
   engines: {
-    node: '>=6',
+    node: '>=8',
   },
   scripts: {
     build: 'rimraf dist && rollup -c',
@@ -23,9 +23,10 @@
     lint: 'eslint .',
     fix: 'eslint --fix .',
     'lint-dist': 'eslint -c .dist.eslintrc.json --no-eslintrc --no-ignore dist',
+    list: 'npm-packlist-cli',
     prepublishOnly: 'npm run production',
     'preversion-orig': 'npm run production',
-    production: 'npm run lint && npm test && npm run build && npm run lint-dist && npm run build-docs',
+    production: 'npm run lint && npm test && npm run build && npm run lint-dist && npm run build-docs && npm run list',
     test: 'tap -Rspec --100 test',
     test4: 'node test/test-node.js4',
     version: 'npm run build-package && git add package.json5',
