@@ -25,7 +25,7 @@ some productions from [ECMAScript 5.1].
 
 This JavaScript library is a derivative of the official reference implementation for JSON5
 parsing and serialization libraries, where this derivative includes a few extra features: 
-these extras are marked with XXXXXXXXX in the feature list further below.
+these extras are marked with 🎷🍓 in the feature list further below.
 
 [Build Status]: https://travis-ci.org/GerHobbelt/json5
 
@@ -79,8 +79,8 @@ been extended to JSON5.
 - Strings may be single quoted.
 - Strings may span multiple lines by escaping new line characters.
 - Strings may include character escapes.
-- Strings may be [ES2015-style \`...\` multiline string template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals).
-- Strings may be ["heredoc" strings](https://en.wikipedia.org/wiki/Here_document).
+- 🎷🍓 Strings may be [ES2015-style \`...\` multiline string template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals).
+- 🎷🍓 Strings may be ["heredoc" strings](https://en.wikipedia.org/wiki/Here_document).
 
 Note the restrictions mentioned below in the section about enhanced string formats.
 
@@ -234,7 +234,7 @@ properties if a replacer array is specified.
   first 10 characters of the string, if it's longer than that) is used as white
   space. If this parameter is not provided (or is null), no white space is used.
   If white space is used, trailing commas will be used in objects and arrays.
-- `circularRefHandler`: A callback function which is invoked for every element
+- `circularRefHandler`: 🎷🍓 A callback function which is invoked for every element
   which would otherwise cause `JSON5.stringify()` to throw a 
   `"converting circular structure to JSON5"` *TypeError* exception.
 
@@ -273,11 +273,11 @@ properties if a replacer array is specified.
     strings. When not explicitly specified, JSON5 will heuristically determine 
 	the quote to use for each string value to minimize the number of character
 	escapes (and thus minimize output size).
-  - `circularRefHandler`: A callback function which is invoked for every element
+  - `circularRefHandler`: 🎷🍓 A callback function which is invoked for every element
     which would otherwise cause `JSON5.stringify()` to throw a 
     `"converting circular structure to JSON5"` *TypeError* exception. See the 
     `circularRefHandler` argument description above for more info.
-  - `noES6StringOutput`: when set to `true` (or a truthy value) 
+  - `noES6StringOutput`: 🎷🍓 when set to `true` (or a truthy value) 
     `JSON5.stringify()` will not output ('`') backtick-encoded 
     ES6 string literals; instead the strings will be output in JSON5 Standard 
 	single- or double-quoted escaped string values. You may set this option to 
@@ -305,7 +305,7 @@ example:
 const config = require('./config.json5')
 ```
 
-**NOTE**: This, of course, assumes the `require`d JSON5 file DOES NOT contain "heredoc" formatted
+**NOTE**: 🎷🍓 This, of course, assumes the `require`d JSON5 file DOES NOT contain "heredoc" formatted
 string content!
 
 
@@ -377,11 +377,11 @@ JSON5, please submit an issue to this repository.
 
 
 
-## What's New or Different?
+## 🎷🍓 What's New or Different?
 
 Here's a comprehensive list of features and fixes compared to the [original](https://github.com/json5/json5)
 
-* added support for [ES2015-style \`...\` multiline string template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), e.g.
+* 🎷🍓 added support for [ES2015-style \`...\` multiline string template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals), e.g.
 
   ```
   { str: `multiline
@@ -408,7 +408,7 @@ Here's a comprehensive list of features and fixes compared to the [original](htt
 	- CRLF -> LF
 	- CR -> LF
   
-* added support for [heredoc string](https://en.wikipedia.org/wiki/Here_document) values, 
+* 🎷🍓 added support for [heredoc string](https://en.wikipedia.org/wiki/Here_document) values, 
   which must start with `<<` immediately followed by a marker, e.g. `EOT` or 
   some other alphanumeric identifier, which, when used on a line alone, will 
   signal the end of the 'heredoc' string. 
@@ -482,7 +482,7 @@ Here's a comprehensive list of features and fixes compared to the [original](htt
 	where all line endings are automatically converted to UNIX style '\n'.
 	Hence one may consider heredoc as a *binary data* format.
   
-* `JSON5.stringify()` comes with a *fourth* argument: an optional callback method 
+* 🎷🍓 `JSON5.stringify()` comes with a *fourth* argument: an optional callback method 
   which will be invoked for each value in the value-to-stringify which would cause 
   a 'cyclical reference' error to be thrown otherwise. 
   
@@ -491,12 +491,10 @@ Here's a comprehensive list of features and fixes compared to the [original](htt
 
   See the API documentation further above.
   
-* Duplicate the same key in an object causes a syntax error when parsing JSON5 input. 
+* 🎷🍓 Duplicate the same key in an object causes a syntax error when parsing JSON5 input. 
   (This can happen, for instance, when you feed manually edited JSON5 content 
   to `JSON5.parse()` or when processing JSON5 content which has been (incorrectly) 
   merged by arbitrary text diff/patch tools.)
-
-* ... TBD ...
 
 
 
