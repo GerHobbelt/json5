@@ -93,6 +93,25 @@ Note the restrictions mentioned below in the section about enhanced string forma
 - Numbers may begin with an explicit plus sign.
 
 
+## RegExp instances (and derived classes)
+
+- 🎷🍓 [RegExp class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) instances
+  are serialized as regular objects with at least these attributes: 
+  + `re` ([`=RegExp.toString()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/toString)
+  + `source` ([`=RegExp.source`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/source))
+  + `flags` ([`=RegExp.flags`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/flags))
+  Any [browsable attributes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys) added to the instance will be included in the JSON5 output.
+
+
+## Error instances (and derived classes)
+
+- 🎷🍓 [Error class](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error) instances
+  are serialized as regular objects with at least these attributes: 
+  + `name` ([`=Error.name`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/name)
+  + `message` ([`=Error.message`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/message))
+  Any [browsable attributes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys) added to the instance will be included in the JSON5 output.
+
+
 ### Comments
 
 - Single and multi-line comments are allowed.
