@@ -528,6 +528,7 @@ MIT. See [LICENSE.md](https://github.com/json5/json5/blob/master/LICENSE.md) for
 details.
 
 
+
 ## Credits
 
 [Assem Kishore](https://github.com/aseemk) founded this project.
@@ -556,6 +557,26 @@ supporter, contributing multiple patches and ideas.
 [Jordan Tucker](https://github.com/jordanbtucker) has aligned JSON5 more closely
 with ES5, wrote the official JSON5 specification, completely rewrote the
 codebase from the ground up, and is actively maintaining this project.
+
+
+
+## Related material
+
+Packages and documents discussing material which attempts to solve the same
+or a very similar problem: 
+
+machine-readable (and -writable) structured data
+which is easy for humans to *read* and *write*.
+
+### Packages
+
+- HJSON: http://hjson.org/ / https://github.com/hjson/hjson
+- JSONext: https://github.com/jordanbtucker/jsonext
+- cJSON: https://github.com/kof/node-cjson
+
+### Documents
+
+- https://github.com/json5/json5/issues/190 / https://github.com/hjson/hjson/issues/87
 
 
 
