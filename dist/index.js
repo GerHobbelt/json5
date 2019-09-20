@@ -44,6 +44,8 @@
 	// Nashorn ~ JDK8 bug
 	var NASHORN_BUG = getOwnPropertyDescriptor && !nativePropertyIsEnumerable.call({ 1: 2 }, 1);
 
+	// `Object.prototype.propertyIsEnumerable` method implementation
+	// https://tc39.github.io/ecma262/#sec-object.prototype.propertyisenumerable
 	var f = NASHORN_BUG ? function propertyIsEnumerable(V) {
 	  var descriptor = getOwnPropertyDescriptor(this, V);
 	  return !!descriptor && descriptor.enumerable;
@@ -68,12 +70,9 @@
 	  return toString.call(it).slice(8, -1);
 	};
 
-	// fallback for non-array-like ES3 and non-enumerable old V8 strings
-
-
-
 	var split = ''.split;
 
+	// fallback for non-array-like ES3 and non-enumerable old V8 strings
 	var indexedObject = fails(function () {
 	  // throws an error in rhino, see https://github.com/mozilla/rhino/issues/346
 	  // eslint-disable-next-line no-prototype-builtins
@@ -101,15 +100,16 @@
 	  return typeof it === 'object' ? it !== null : typeof it === 'function';
 	};
 
-	// 7.1.1 ToPrimitive(input [, PreferredType])
+	// `ToPrimitive` abstract operation
+	// https://tc39.github.io/ecma262/#sec-toprimitive
 	// instead of the ES6 spec version, we didn't implement @@toPrimitive case
 	// and the second argument - flag - preferred type is a string
-	var toPrimitive = function (it, S) {
-	  if (!isObject(it)) { return it; }
+	var toPrimitive = function (input, PREFERRED_STRING) {
+	  if (!isObject(input)) { return input; }
 	  var fn, val;
-	  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) { return val; }
-	  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) { return val; }
-	  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) { return val; }
+	  if (PREFERRED_STRING && typeof (fn = input.toString) == 'function' && !isObject(val = fn.call(input))) { return val; }
+	  if (typeof (fn = input.valueOf) == 'function' && !isObject(val = fn.call(input))) { return val; }
+	  if (!PREFERRED_STRING && typeof (fn = input.toString) == 'function' && !isObject(val = fn.call(input))) { return val; }
 	  throw TypeError("Can't convert object to primitive value");
 	};
 
@@ -121,10 +121,10 @@
 
 	var document = global_1.document;
 	// typeof document.createElement is 'object' in old IE
-	var exist = isObject(document) && isObject(document.createElement);
+	var EXISTS = isObject(document) && isObject(document.createElement);
 
 	var documentCreateElement = function (it) {
-	  return exist ? document.createElement(it) : {};
+	  return EXISTS ? document.createElement(it) : {};
 	};
 
 	// Thank's IE8 for his funny defineProperty
@@ -136,6 +136,8 @@
 
 	var nativeGetOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
 
+	// `Object.getOwnPropertyDescriptor` method
+	// https://tc39.github.io/ecma262/#sec-object.getownpropertydescriptor
 	var f$1 = descriptors ? nativeGetOwnPropertyDescriptor : function getOwnPropertyDescriptor(O, P) {
 	  O = toIndexedObject(O);
 	  P = toPrimitive(P, true);
@@ -157,6 +159,8 @@
 
 	var nativeDefineProperty = Object.defineProperty;
 
+	// `Object.defineProperty` method
+	// https://tc39.github.io/ecma262/#sec-object.defineproperty
 	var f$2 = descriptors ? nativeDefineProperty : function defineProperty(O, P, Attributes) {
 	  anObject(O);
 	  P = toPrimitive(P, true);
@@ -195,8 +199,8 @@
 	(module.exports = function (key, value) {
 	  return store[key] || (store[key] = value !== undefined ? value : {});
 	})('versions', []).push({
-	  version: '3.1.3',
-	  mode: 'global',
+	  version: '3.2.1',
+	  mode:  'global',
 	  copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
 	});
 	});
@@ -211,7 +215,7 @@
 	var postfix = Math.random();
 
 	var uid = function (key) {
-	  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + postfix).toString(36));
+	  return 'Symbol(' + String(key === undefined ? '' : key) + ')_' + (++id + postfix).toString(36);
 	};
 
 	var keys = shared('keys');
@@ -310,6 +314,17 @@
 	});
 	});
 
+	var path = global_1;
+
+	var aFunction = function (variable) {
+	  return typeof variable == 'function' ? variable : undefined;
+	};
+
+	var getBuiltIn = function (namespace, method) {
+	  return arguments.length < 2 ? aFunction(path[namespace]) || aFunction(global_1[namespace])
+	    : path[namespace] && path[namespace][method] || global_1[namespace] && global_1[namespace][method];
+	};
+
 	var ceil = Math.ceil;
 	var floor = Math.floor;
 
@@ -339,11 +354,7 @@
 	};
 
 	// `Array.prototype.{ indexOf, includes }` methods implementation
-	// false -> Array#indexOf
-	// https://tc39.github.io/ecma262/#sec-array.prototype.indexof
-	// true  -> Array#includes
-	// https://tc39.github.io/ecma262/#sec-array.prototype.includes
-	var arrayIncludes = function (IS_INCLUDES) {
+	var createMethod = function (IS_INCLUDES) {
 	  return function ($this, el, fromIndex) {
 	    var O = toIndexedObject($this);
 	    var length = toLength(O.length);
@@ -356,13 +367,23 @@
 	      // eslint-disable-next-line no-self-compare
 	      if (value != value) { return true; }
 	    // Array#indexOf ignores holes, Array#includes - not
-	    } } else { for (;length > index; index++) { if (IS_INCLUDES || index in O) {
-	      if (O[index] === el) { return IS_INCLUDES || index || 0; }
-	    } } } return !IS_INCLUDES && -1;
+	    } } else { for (;length > index; index++) {
+	      if ((IS_INCLUDES || index in O) && O[index] === el) { return IS_INCLUDES || index || 0; }
+	    } } return !IS_INCLUDES && -1;
 	  };
 	};
 
-	var arrayIndexOf = arrayIncludes(false);
+	var arrayIncludes = {
+	  // `Array.prototype.includes` method
+	  // https://tc39.github.io/ecma262/#sec-array.prototype.includes
+	  includes: createMethod(true),
+	  // `Array.prototype.indexOf` method
+	  // https://tc39.github.io/ecma262/#sec-array.prototype.indexof
+	  indexOf: createMethod(false)
+	};
+
+	var indexOf = arrayIncludes.indexOf;
+
 
 	var objectKeysInternal = function (object, names) {
 	  var O = toIndexedObject(object);
@@ -372,7 +393,7 @@
 	  for (key in O) { !has(hiddenKeys, key) && has(O, key) && result.push(key); }
 	  // Don't enum bug & hidden keys
 	  while (names.length > i) { if (has(O, key = names[i++])) {
-	    ~arrayIndexOf(result, key) || result.push(key);
+	    ~indexOf(result, key) || result.push(key);
 	  } }
 	  return result;
 	};
@@ -388,12 +409,10 @@
 	  'valueOf'
 	];
 
-	// 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
-
-
-
 	var hiddenKeys$1 = enumBugKeys.concat('length', 'prototype');
 
+	// `Object.getOwnPropertyNames` method
+	// https://tc39.github.io/ecma262/#sec-object.getownpropertynames
 	var f$3 = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
 	  return objectKeysInternal(O, hiddenKeys$1);
 	};
@@ -408,10 +427,8 @@
 		f: f$4
 	};
 
-	var Reflect = global_1.Reflect;
-
 	// all object keys, includes non-enumerable and symbols
-	var ownKeys = Reflect && Reflect.ownKeys || function ownKeys(it) {
+	var ownKeys = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
 	  var keys = objectGetOwnPropertyNames.f(anObject(it));
 	  var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
 	  return getOwnPropertySymbols ? keys.concat(getOwnPropertySymbols(it)) : keys;
@@ -501,30 +518,42 @@
 	  } }
 	};
 
-	// CONVERT_TO_STRING: true  -> String#at
-	// CONVERT_TO_STRING: false -> String#codePointAt
-	var stringAt = function (that, pos, CONVERT_TO_STRING) {
-	  var S = String(requireObjectCoercible(that));
-	  var position = toInteger(pos);
-	  var size = S.length;
-	  var first, second;
-	  if (position < 0 || position >= size) { return CONVERT_TO_STRING ? '' : undefined; }
-	  first = S.charCodeAt(position);
-	  return first < 0xD800 || first > 0xDBFF || position + 1 === size
-	    || (second = S.charCodeAt(position + 1)) < 0xDC00 || second > 0xDFFF
-	      ? CONVERT_TO_STRING ? S.charAt(position) : first
-	      : CONVERT_TO_STRING ? S.slice(position, position + 2) : (first - 0xD800 << 10) + (second - 0xDC00) + 0x10000;
+	// `String.prototype.{ codePointAt, at }` methods implementation
+	var createMethod$1 = function (CONVERT_TO_STRING) {
+	  return function ($this, pos) {
+	    var S = String(requireObjectCoercible($this));
+	    var position = toInteger(pos);
+	    var size = S.length;
+	    var first, second;
+	    if (position < 0 || position >= size) { return CONVERT_TO_STRING ? '' : undefined; }
+	    first = S.charCodeAt(position);
+	    return first < 0xD800 || first > 0xDBFF || position + 1 === size
+	      || (second = S.charCodeAt(position + 1)) < 0xDC00 || second > 0xDFFF
+	        ? CONVERT_TO_STRING ? S.charAt(position) : first
+	        : CONVERT_TO_STRING ? S.slice(position, position + 2) : (first - 0xD800 << 10) + (second - 0xDC00) + 0x10000;
+	  };
 	};
+
+	var stringMultibyte = {
+	  // `String.prototype.codePointAt` method
+	  // https://tc39.github.io/ecma262/#sec-string.prototype.codepointat
+	  codeAt: createMethod$1(false),
+	  // `String.prototype.at` method
+	  // https://github.com/mathiasbynens/String.prototype.at
+	  charAt: createMethod$1(true)
+	};
+
+	var codeAt = stringMultibyte.codeAt;
 
 	// `String.prototype.codePointAt` method
 	// https://tc39.github.io/ecma262/#sec-string.prototype.codepointat
 	_export({ target: 'String', proto: true }, {
 	  codePointAt: function codePointAt(pos) {
-	    return stringAt(this, pos);
+	    return codeAt(this, pos);
 	  }
 	});
 
-	var aFunction = function (it) {
+	var aFunction$1 = function (it) {
 	  if (typeof it != 'function') {
 	    throw TypeError(String(it) + ' is not a function');
 	  } return it;
@@ -532,7 +561,7 @@
 
 	// optional / simple context binding
 	var bindContext = function (fn, that, length) {
-	  aFunction(fn);
+	  aFunction$1(fn);
 	  if (that === undefined) { return fn; }
 	  switch (length) {
 	    case 0: return function () {
@@ -587,8 +616,6 @@
 	    } return elements.join('');
 	  }
 	});
-
-	var path = global_1;
 
 	var fromCodePoint = path.String.fromCodePoint;
 

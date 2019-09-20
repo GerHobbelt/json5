@@ -737,11 +737,11 @@ const lexStates = {
         // on a line by itself, without any preceeding or trailing whitespace.
         // If the JSON5 field is followed by more data, the separator (comma, bracket, ...) must exist
         // on the line *past* the EOT marker line: the EOT must be clearly 'alone' in there.
-        let start = pos;
+        const start = pos;
         let end = pos;
-        let eotCh0 = heredocMarker[0];
+        const eotCh0 = heredocMarker[0];
         for (;;) {
-            let idx = source.indexOf(eotCh0, pos);
+            const idx = source.indexOf(eotCh0, pos);
             if (idx < 0) {
                 throw syntaxError(`JSON5: the heredoc string MUST be terminated by the sentinel "${heredocMarker}" on a separate line. Heredoc exists at ${line}:${column}`)
             }
@@ -807,7 +807,7 @@ const lexStates = {
 
                 // replicate the peek()+read() location tracking functionality here
                 // for performance reasons:
-                let lines = buffer.split(/\r\n|\n|\r/);
+                const lines = buffer.split(/\r\n|\n|\r/);
                 line += lines.length + 1; /* line carrying the EOT marker */
                 // since a heredoc spans entire lines and the sentinel itself is terminated by another newline,
                 // we can safely reset the column value:
@@ -1440,40 +1440,40 @@ var stringify = function stringify (value, replacer, space, circularRefHandler) 
 
         if (typeof value === 'object') {
             if (value instanceof Error) {
-                let ex = {
+                const ex = {
                     message: value.message,
                     // stack: value.stack,
                     name: value.name,
                 };
-                let exKeys = Object.keys(value);
+                const exKeys = Object.keys(value);
                 for (const exKey of exKeys) {
                     ex[exKey] = value[exKey];
                 }
                 value = ex;
             } else if (value instanceof RegExp) {
-                let re = {
+                const re = {
                     re: String(value),
                     source: value.source,
                     flags: value.flags,
                 };
-                let exKeys = Object.keys(value);
+                const exKeys = Object.keys(value);
                 for (const exKey of exKeys) {
                     re[exKey] = value[exKey];
                 }
                 value = re;
             }
 
-            let circusPos = stack.indexOf(value);
+            const circusPos = stack.indexOf(value);
             if (circusPos >= 0) {
-                let err = new TypeError('converting circular structure to JSON5');
+                const err = new TypeError('converting circular structure to JSON5');
                 if (typeof circularRefHandler === 'function') {
                     // The user callback MAY introduce another circular ref (unwanted) to serialize:
                     // we cope with it by temporarily switching out the callback, while we
                     // serialize the produce.
-                    let newValue = circularRefHandler(value, circusPos, stack.slice(0) /* snapshot */, keyStack.slice(0) /* snapshot */, key, err);
-                    let oldF = circularRefHandler;
+                    const newValue = circularRefHandler(value, circusPos, stack.slice(0) /* snapshot */, keyStack.slice(0) /* snapshot */, key, err);
+                    const oldF = circularRefHandler;
                     circularRefHandler = (value, circusPos, stack, keyStack, key, err) => '[!circular ref inside circularRefHandler!]';
-                    let rv = serializeProperty('', {'': newValue});
+                    const rv = serializeProperty('', {'': newValue});
                     circularRefHandler = oldF;
                     return rv
                 } else {
@@ -1511,9 +1511,9 @@ var stringify = function stringify (value, replacer, space, circularRefHandler) 
 
         // apply heuristic to the decision:
         let es6style = false;
-        let l1 = value.split(eolRe);
-        let l2 = value.split(regularReplacementsRe);
-        let l3 = value.split(es6ReplacementHeuristicRe);
+        const l1 = value.split(eolRe);
+        const l2 = value.split(regularReplacementsRe);
+        const l3 = value.split(es6ReplacementHeuristicRe);
 
         es6style = (l1.length >= 3);
         if (!es6style) {
@@ -1568,7 +1568,7 @@ var stringify = function stringify (value, replacer, space, circularRefHandler) 
             }
 
             if (c < ' ') {
-                let hexString = c.charCodeAt(0).toString(16);
+                const hexString = c.charCodeAt(0).toString(16);
                 product += '\\x' + ('00' + hexString).substring(hexString.length);
                 continue
             }
@@ -1587,11 +1587,11 @@ var stringify = function stringify (value, replacer, space, circularRefHandler) 
         stack.push(value);
         keyStack.push(key);
 
-        let stepback = indent;
+        const stepback = indent;
         indent = indent + gap;
 
-        let keys = propertyList || Object.keys(value);
-        let partial = [];
+        const keys = propertyList || Object.keys(value);
+        const partial = [];
         for (const key of keys) {
             const propertyString = serializeProperty(key, value);
             if (propertyString !== undefined) {
@@ -1613,7 +1613,7 @@ var stringify = function stringify (value, replacer, space, circularRefHandler) 
                 properties = partial.join(',');
                 final = '{' + properties + '}';
             } else {
-                let separator = ',\n' + indent;
+                const separator = ',\n' + indent;
                 properties = partial.join(separator);
                 final = '{\n' + indent + properties + ',\n' + stepback + '}';
             }
@@ -1648,10 +1648,10 @@ var stringify = function stringify (value, replacer, space, circularRefHandler) 
         stack.push(value);
         keyStack.push(key);
 
-        let stepback = indent;
+        const stepback = indent;
         indent = indent + gap;
 
-        let partial = [];
+        const partial = [];
         for (let i = 0; i < value.length; i++) {
             const propertyString = serializeProperty(String(i), value);
             partial.push((propertyString !== undefined) ? propertyString : 'null');
@@ -1662,11 +1662,11 @@ var stringify = function stringify (value, replacer, space, circularRefHandler) 
             final = '[]';
         } else {
             if (gap === '') {
-                let properties = partial.join(',');
+                const properties = partial.join(',');
                 final = '[' + properties + ']';
             } else {
-                let separator = ',\n' + indent;
-                let properties = partial.join(separator);
+                const separator = ',\n' + indent;
+                const properties = partial.join(separator);
                 final = '[\n' + indent + properties + ',\n' + stepback + ']';
             }
         }
