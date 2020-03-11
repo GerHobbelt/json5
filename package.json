@@ -55,7 +55,7 @@
   },
   "homepage": "http://json5.org/",
   "dependencies": {
-    "minimist": "1.2.0"
+    "minimist": "1.2.2"
   },
   "devDependencies": {
     "commonmark": "0.29.0",
