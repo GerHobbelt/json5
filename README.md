@@ -1,4 +1,4 @@
-# JSON5 – JSON for Humans
+# JSON-X: *An extended fork of [JSON5](https://github.com/json5/json5)*
 
 [![GitHub Repository][github-badge]][github-url]
 [![npm version][npm-badge]][npm-url]
@@ -6,18 +6,20 @@
 [![Coverage Status][coveralls-badge]][coveralls-url]
 [![Dependency Status][david-badge]][david-url]
 
+This repository contains a fork maintained by GerHobbelt. The original JSON5 work is available at [json5/json5](https://github.com/json5/json5).
+JSON5 is designed to be valid ES5 Javascript, and [as its maintainer points out](https://github.com/json5/json5/issues/190#issuecomment-459741344):
+
+> JSON5 indicates a specific, reliable target—ES5. JSON5 syntax will never go beyond the syntax of ES5. Sure, that means it will miss out newer features, but it also means that users don't need to worry about what version of JSONX is supported.
+
+JSON-X doesn't maintain this guarantee. Though it includes support for ES6-style multiline string template literals, it's not named JSON6 because it includes other syntax that is not valid ES6.
+
+For an overview of all changes \(fixes and features\), see the section [JSON-X extensions to JSON5?](#user-content-json-x extensions-to-json5) further below.
 
 
 
->
-> # Notice
->
-> This repository contains a fork maintained by GerHobbelt. The original JSON5 work is available at [json5/json5](https://github.com/json5/json5).
->
-> For an overview of all changes \(fixes and features\), see the section [What's New or Different?](#user-content-whats-new-or-different) further below.
->
+# Fully backward compatible with JSON5
 
-
+## The following is from JSON5's README
 
 The JSON5 Data Interchange Format (JSON5) is a superset of [JSON] that aims to
 alleviate some of the limitations of JSON by expanding its syntax to include
@@ -400,7 +402,7 @@ JSON5, please submit an issue to this repository.
 
 
 
-## 🎷🍓 What's New or Different?
+# 🎷🍓 JSON-X extensions to JSON5
 
 Here's a comprehensive list of features and fixes compared to the [original](https://github.com/json5/json5)
 
@@ -472,21 +474,22 @@ Here's a comprehensive list of features and fixes compared to the [original](htt
   + By convention we do not accept 'formatting whitespace/indentation' before the EOT
     marker on the same line.
     
-	The *content* of the heredoc starts after the first CR/LF;
-    we DO NOT tolerate trailing whitespace or any other cruft immediately 
-	following the EOT marker!
+	
+  The *content* of the heredoc starts after the first CR/LF;
+	  we DO NOT tolerate trailing whitespace or any other cruft immediately 
+  following the EOT marker!
   
   + JSON5 scans for a lone heredoc EOT marker to terminate the string content; 
-    until we find one, everything is literal string content.
-
-  + heredoc content DOES NOT process escape sequences: everything is passed on as-is!
-
+  until we find one, everything is literal string content.
+  
++ heredoc content DOES NOT process escape sequences: everything is passed on as-is!
+  
   + The content ENDS *before* the last CR/LF before the lone EOT marker; 
     i.e. the EOT marker must exist
-    on a line by itself, without any preceeding or trailing whitespace.
-	
+	  on a line by itself, without any preceeding or trailing whitespace.
+  
   + If the JSON5 field is followed by more data, the separator (comma, bracket, ...) 
-    must exist on the line *past* the EOT marker line: the EOT must be 
+	  must exist on the line *past* the EOT marker line: the EOT must be 
 	clearly 'alone' in there, e.g.:
 	
 	```
@@ -497,13 +500,13 @@ Here's a comprehensive list of features and fixes compared to the [original](htt
 	EOT
 	, extra: 42
 	}
-	```
+  ```
   
   + CR / CRLF / LF MAC/Windows/UNIX line ends in the content ARE NOT transformed.
   
-    This differs from the 'multiline string literal' type described above, 
+	  This differs from the 'multiline string literal' type described above, 
 	where all line endings are automatically converted to UNIX style '\n'.
-	Hence one may consider heredoc as a *binary data* format.
+  Hence one may consider heredoc as a *binary data* format.
   
 * 🎷🍓 `JSON5.stringify()` comes with a *fourth* argument: an optional callback method 
   which will be invoked for each value in the value-to-stringify which would cause 
